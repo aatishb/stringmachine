@@ -6,13 +6,15 @@ var geom = function() {
 
     function drawLines(){
         // draw lines
-        for (let myLine of lines) {
+        for (let myLine of lines)
+        {
             myLine.drawLine();
         }
     }
 
     function drawIntersections(){
-        for (let myIntersection of geom.intersections) {
+        for (let myIntersection of geom.intersections)
+        {
             ellipse(myIntersection.point.x, myIntersection.point.y, 10);
         }
     }
@@ -22,39 +24,47 @@ var geom = function() {
     // returns false if the line is exactly on top of another line
     function computeIntersections(newLine) {
 
-        if(newLine.lineLength() <= 0.1){
+        if(newLine.lineLength() <= 0.1)
+        {
             return false;
         }
+
         let lineIsUnique = true;
 
-        for (let myLine of lines) {
-
+        for (let myLine of lines)
+        {
             if (myLine != newLine)
             {
-
-                if (intersectLines(newLine, myLine) && !hasSameCoordinates(myLine, newLine)) {
-                    if(debugMode){console.log('intersection detected at frame: '+frameCount);}
+                if (intersectLines(newLine, myLine) && !hasSameCoordinates(myLine, newLine))
+                {
                     let poi = pointOfIntersection(newLine, myLine);
-                    if (poi.length > 0) {
+                    if (poi.length > 0)
+                    {
                         for (let myPoint of poi)
                         {
                             let isDuplicate = false;
                             let myIndex = -1;
-                            for (let myInt of intersections) {
-                                if (myPoint.dist(myInt.point) < 0.1) {
+                            for (let myInt of intersections)
+                            {
+                                if (myPoint.dist(myInt.point) < 0.1)
+                                {
                                     isDuplicate = true;
                                     myIndex = intersections.indexOf(myInt);
                                 }
                             }
-                            if (!isDuplicate) {
+                            if (!isDuplicate)
+                            {
                                 intersections.push({
                                     point: myPoint,
                                     lines: [newLine, myLine]
                                 });
-                            } else {
+                            }
+                            else
+                            {
                                 // if this intersection is not new
                                 // add the new line to its members
-                                if (intersections[myIndex].lines.includes(newLine)) {
+                                if (intersections[myIndex].lines.includes(newLine))
+                                {
                                     intersections[myIndex].lines.push(newLine);
                                 }
                             }
@@ -65,7 +75,8 @@ var geom = function() {
 
                 // if we have different lines with the same coordinates
                 // the new line is not unique
-                if (hasSameCoordinates(myLine, newLine)) {
+                if (hasSameCoordinates(myLine, newLine))
+                {
                     console.log('Line is not unique!');
                     lineIsUnique = false;
                 }
@@ -80,26 +91,32 @@ var geom = function() {
     function deleteIntersections(myLine) {
 
         let index = [];
-        for (let myIntersection of intersections) {
-            if (myIntersection.lines.includes(myLine)) {
+        for (let myIntersection of intersections)
+        {
+            if (myIntersection.lines.includes(myLine))
+            {
                 index.push(intersections.indexOf(myIntersection));
             }
         }
 
-        for (var i = index.length - 1; i >= 0; i--) {
+        for (var i = index.length - 1; i >= 0; i--)
+        {
             if (intersections[index[i]].lines.length > 2)
             {
                 deleteElement(intersections[index[i]].lines,myLine);
             }
-            else {
+            else
+            {
                 intersections.splice(index[i], 1);
             }
         }
     }
 
     function deleteElement(array, value){
-        for (let i = array.length - 1; i >= 0; i--) {
-            if (array[i] == value) {
+        for (let i = array.length - 1; i >= 0; i--)
+        {
+            if (array[i] == value)
+            {
                 array.splice(i, 1);
             }
         }
@@ -122,30 +139,37 @@ var geom = function() {
         let o4 = orientation(p2, q2, q1);
 
         // General case
-        if (o1 != o2 && o3 != o4) {
+        if (o1 != o2 && o3 != o4)
+        {
             return true;
         }
 
         // Special Cases
         // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-        else if (o1 == 0 && onSegment(p1, p2, q1)) {
+        else if (o1 == 0 && onSegment(p1, p2, q1))
+        {
             return true;
         }
 
         // p1, q1 and q2 are colinear and q2 lies on segment p1q1
-        else if (o2 == 0 && onSegment(p1, q2, q1)) {
+        else if (o2 == 0 && onSegment(p1, q2, q1))
+        {
             return true;
         }
 
         // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-        else if (o3 == 0 && onSegment(p2, p1, q2)) {
+        else if (o3 == 0 && onSegment(p2, p1, q2))
+        {
             return true;
         }
 
         // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-        else if (o4 == 0 && onSegment(p2, q1, q2)) {
+        else if (o4 == 0 && onSegment(p2, q1, q2))
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         } // Doesn't fall in any of the above cases
     }
@@ -161,10 +185,12 @@ var geom = function() {
         // for details of below formula.
         let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
-        if (val == 0) {
+        if (val == 0)
+        {
             return 0;
         } // colinear
-        else if (val > 0) {
+        else if (val > 0)
+        {
             return 1;
         } // clockwise
         else {
@@ -179,7 +205,8 @@ var geom = function() {
     // point q lies on line segment 'pr'
     function onSegment(p, q, r) {
 
-        if (abs(p.dist(q) + q.dist(r) - p.dist(r)) < 0.1) {
+        if (abs(p.dist(q) + q.dist(r) - p.dist(r)) < 0.1)
+        {
             return true;
         }
         else {
@@ -207,33 +234,28 @@ var geom = function() {
         let pointsOfIntersection = [];
         let cutoff = 0.1;
 
-        if (abs(denominator) > cutoff) {
-            if(debugMode){console.log('non parallel lines detected');}
+        if (abs(denominator) > cutoff)
+        {
             let u = numerator1 / denominator;
             let x = x1 + u * (x2 - x1);
             let y = y1 + u * (y2 - y1);
             pointsOfIntersection.push(createVector(x, y));
         }
-        else { // lines are parallel
-            if(debugMode){console.log('parallel lines detected');}
+        else
+        { // lines are parallel
             if (abs(numerator1) < cutoff || abs(numerator2) < cutoff)
             { // lines are overlapping
-                if(debugMode){console.log('coincident lines detected');}
                 if (lineContainsPoint(line1, line2.start))
                 { // lines overlap
-                    if(debugMode){console.log('overlapping lines detected');}
                     pointsOfIntersection.push(createVector(line2.start.x, line2.start.y));
                 }
                 if (lineContainsPoint(line1, line2.end)) { // lines overlap
-                    if(debugMode){console.log('overlapping lines detected');}
                     pointsOfIntersection.push(createVector(line2.end.x, line2.end.y));
                 }
                 if (lineContainsPoint(line2, line1.start)) { // lines overlap
-                    if(debugMode){console.log('overlapping lines detected');}
                     pointsOfIntersection.push(createVector(line1.start.x, line1.start.y));
                 }
                 if (lineContainsPoint(line2, line1.end)) { // lines overlap
-                    if(debugMode){console.log('overlapping lines detected');}
                     pointsOfIntersection.push(createVector(line1.end.x, line1.end.y));
                 }
             }
@@ -243,7 +265,8 @@ var geom = function() {
     }
 
     function drawCorners() {
-        for (let myLine of lines) {
+        for (let myLine of lines)
+        {
             ellipse(myLine.start.x, myLine.start.y, 10);
             ellipse(myLine.end.x, myLine.end.y, 10);
         }
@@ -278,9 +301,12 @@ var geom = function() {
         let b = myLine.end;
         let c = myPoint;
 
-        if (abs(a.dist(c) + c.dist(b) - a.dist(b)) < 0.1) {
+        if (abs(a.dist(c) + c.dist(b) - a.dist(b)) < 0.1)
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
 
@@ -308,22 +334,28 @@ var geom = function() {
             if(pointsOnLine.length>0)
             {
                 // sort these points along with the start and end point of the line
-                if(abs(start.x-end.x) > 0.1){
-                    if(start.x < end.x){
+                if(abs(start.x-end.x) > 0.1)
+                {
+                    if(start.x < end.x)
+                    {
                         // sort points by x value ascending
                         pointsOnLine.sort(function(a,b) {return a.x-b.x;});
                     }
-                    else{
+                    else
+                    {
                         // sort points by x value descending
                         pointsOnLine.sort(function(a,b) {return b.x-a.x;});
                     }
                 }
-                else if(abs(start.y - end.y)>0.1){
-                    if(start.y < end.y){
+                else if(abs(start.y - end.y)>0.1)
+                {
+                    if(start.y < end.y)
+                    {
                         // sort points by y value ascending
                         pointsOnLine.sort(function(a,b) {return a.y-b.y;});
                     }
-                    else{
+                    else
+                    {
                         // sort points by y value descending
                         pointsOnLine.sort(function(a,b) {return b.y-a.y;});
                     }
@@ -332,7 +364,8 @@ var geom = function() {
                 deleteElement(lines,myLine);
                 lines.push(new makeNewLine(myLine.start, pointsOnLine[0]));
 
-                for(let i=0; i<pointsOnLine.length-1; i++){
+                for(let i=0; i<pointsOnLine.length-1; i++)
+                {
                     lines.push(new makeNewLine(pointsOnLine[i], pointsOnLine[i+1]));
                 }
 
@@ -357,7 +390,7 @@ var geom = function() {
                     countIntersections++;
                 }
             }
-            if(countIntersections < 2 && myLine.lineLength() < 0.9*ui.spacing)
+            if(countIntersections < 2 && myLine.lineLength() < 0.9*ui.getSpacing())
             {
                 //console.log("deleting line");
                 deleteElement(lines,myLine);

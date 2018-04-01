@@ -4,6 +4,22 @@ var ui = function() {
     let stiffnessSlider;
     let spacing;
     let myFontSize;
+    let adjustMode = false;
+
+    function getAdjustMode() {
+        return adjustMode;
+    }
+
+    function getSpacing() {
+        return spacing;
+    }
+
+    function toggleAdjustMode() {
+        if(mode=='input')
+        {
+            adjustMode = !adjustMode;
+        }
+    }
 
     function setSpacing(w,h){
         spacing = max(w / 30, h / 30);
@@ -38,7 +54,7 @@ var ui = function() {
         button2 = createButton('adjust lines');
         button2.position(19 + 5 * spacing, 19);
         button2.size(4 * spacing, 2 * spacing);
-        button2.mousePressed(interact.toggleAdjustMode);
+        button2.mousePressed(toggleAdjustMode);
         button2.style('font-size', myFontSize);
 
         button3 = createButton('pin it up');
@@ -66,8 +82,10 @@ var ui = function() {
     function snapToGrid(myVec) {
 
         // if there's an intersection nearby, snap to that
-        for (let myInt of geom.intersections) {
-            if (myVec.dist(myInt.point) <= 0.5*spacing) {
+        for (let myInt of geom.intersections)
+        {
+            if (myVec.dist(myInt.point) <= 0.5*spacing)
+            {
                 return myInt.point;
             }
         }
@@ -97,14 +115,16 @@ var ui = function() {
 
 
     return {
-        spacing: spacing,
+        getSpacing: getSpacing,
         setSpacing: setSpacing,
         makeButtons: makeButtons,
         makeSliders: makeSliders,
         welcomeScreen: welcomeScreen,
         snapToGrid: snapToGrid,
         initGrid: initGrid,
-        pinText: pinText
+        pinText: pinText,
+        toggleAdjustMode: toggleAdjustMode,
+        getAdjustMode: getAdjustMode
     };
 
 }();

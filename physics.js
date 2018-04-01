@@ -11,6 +11,7 @@ var phys = function() {
 
     let mesh = [];
     let nodes = [];
+    let pinnedNodes = [];
 
 
     function initializePhysics(){
@@ -22,13 +23,15 @@ var phys = function() {
         physics.setWorldBounds(new Rect(0,0,width,height));
 
         // make particles
-        for(let myNode of nodes){
+        for(let myNode of nodes)
+        {
             let myParticle = new VerletParticle2D(new Vec2D(myNode[0],myNode[1]));
             particles.push(myParticle);
             physics.addParticle(myParticle);
 
             // lock fixed nodes
-            if(pinnedNodes.containsArray(myNode)){
+            if(pinnedNodes.containsArray(myNode))
+            {
                 myParticle.lock();
             }
         }
@@ -53,16 +56,20 @@ var phys = function() {
     }
 
     function addForces(){
-        for(let i=0; i<particles.length; i++){
-            if (!particles[i].isLocked){
+        for(let i=0; i<particles.length; i++)
+        {
+            if (!particles[i].isLocked)
+            {
 
                 accelX = smoothing*accelerationX + (1-smoothing)*accelX ;
                 accelY = smoothing*accelerationY + (1-smoothing)*accelX ;
 
-                if(abs(accelX) > accelCutoff){
+                if(abs(accelX) > accelCutoff)
+                {
                     particles[i].x -= accelX;
                 }
-                if(abs(accelY) > accelCutoff){
+                if(abs(accelY) > accelCutoff)
+                {
                     particles[i].y -= accelY;
                 }
 
@@ -96,12 +103,14 @@ var phys = function() {
             mesh.push([myLine.start.x,myLine.start.y,myLine.end.x,myLine.end.y]);
 
             let myPoint1 = [myLine.start.x,myLine.start.y];
-            if(!nodes.containsArray(myPoint1)){
+            if(!nodes.containsArray(myPoint1))
+            {
                 nodes.push(myPoint1);
             }
 
             let myPoint2 = [myLine.end.x,myLine.end.y];
-            if(!nodes.containsArray(myPoint2)){
+            if(!nodes.containsArray(myPoint2))
+            {
                 nodes.push(myPoint2);
             }
         }
@@ -111,20 +120,41 @@ var phys = function() {
     function changeStiffness(){
         stiffness = stiffnessSlider.value()/100;
 
-        for(let spring of springs){
+        for(let spring of springs)
+        {
             spring.setStrength(stiffness);     // change spring stiffness
         }
     }
 
     function drawNodes(){
-        for (let node of phys.nodes) {
+        for (let node of phys.nodes)
+        {
             ellipse(node[0], node[1], 10);
         }
     }
 
     function drawPinnedNodes(){
-        for (let node of pinnedNodes){
+        for (let node of pinnedNodes)
+        {
             ellipse(node[0],node[1],15);
+        }
+    }
+
+    function updateNodes(myPoint){
+        for (let myNode of nodes)
+        {
+            let nodePos = createVector(myNode[0],myNode[1]);
+
+            if (nodePos.dist(myPoint) < 15)
+            {
+                if(!pinnedNodes.containsArray(myNode)){
+                    pinnedNodes.push(myNode);
+                }
+                else{
+                    let index = pinnedNodes.indexOfPoint(myNode);
+                    pinnedNodes.splice(index,1);
+                }
+            }
         }
     }
 
@@ -138,6 +168,7 @@ var phys = function() {
         createMesh: createMesh,
         changeStiffness: changeStiffness,
         drawNodes: drawNodes,
-        drawPinnedNodes: drawPinnedNodes
+        drawPinnedNodes: drawPinnedNodes,
+        updateNodes: updateNodes
     };
 }();

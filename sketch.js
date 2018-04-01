@@ -3,15 +3,7 @@ let touchIsMoving = false;
 let touchJustEnded = true;
 
 let mode = 'welcome';
-let debugMode = false;
-let adjustMode = false;
-let cornerSelected = false;
-let closestLine = 0;
 
-
-let start,end;
-
-let pinnedNodes = [];
 let backgroundGrid;
 
 function setup() {
@@ -24,35 +16,35 @@ function setup() {
     let h = height;
 
     ui.setSpacing(w,h);
-
     ui.welcomeScreen(w,h);
-
-    textSize(0.66 * ui.spacing);
-
+    textSize(0.66 * ui.getSpacing());
     ui.makeButtons();
     ui.initGrid(w,h);
 }
 
 function draw() {
 
-    if (mode == 'input') {
+    if (mode == 'input')
+    {
         inputMode(); // inputs the mesh
     }
 
-    else if (mode == 'setup'){
+    else if (mode == 'setup')
+    {
         setupMode(); // pin the nodes
     }
 
-    else if (mode == 'simulate'){
+    else if (mode == 'simulate')
+    {
         background(51);
-        simulate(); // simulate physics
+        simulateMode(); // simulate physics
     }
 
 }
 
 function inputMode() {
 
-    if (touchIsMoving || touchJustEnded || cornerSelected)
+    if (touchIsMoving || touchJustEnded || interact.isCornerSelected())
     {
 
         background(51);
@@ -60,8 +52,10 @@ function inputMode() {
         stroke(200);
 
 
-        if (touchIsMoving) {
-            if (!cornerSelected) {
+        if (touchIsMoving)
+        {
+            if (!interact.isCornerSelected())
+            {
                 line(startPos.x, startPos.y, mouseX, mouseY); // draw current line
             }
         }
@@ -73,7 +67,8 @@ function inputMode() {
         fill('red');
         geom.drawIntersections();
 
-        if (adjustMode) {
+        if (ui.getAdjustMode())
+        {
             noStroke();
             fill('lightblue');
             geom.drawCorners();
@@ -85,7 +80,8 @@ function inputMode() {
 
 function presetup() {
 
-    if(mode == 'input'){
+    if(mode == 'input')
+    {
         geom.subdivideLines();
         geom.pruneLines();
         phys.createMesh();
@@ -97,13 +93,13 @@ function presetup() {
 
 function setupMode() {
 
-    if(touchJustEnded){
+    if(touchJustEnded)
+    {
         background(51);
         image(backgroundGrid, 0, 0, width, height);
         stroke(200);
 
         geom.drawLines();
-
         noStroke();
 
         // draw intersections
@@ -124,8 +120,8 @@ function setupMode() {
 
 function initializePhysics(){
 
-    if(mode == 'setup'){
-
+    if(mode == 'setup')
+    {
         phys.initializePhysics();
         stroke(200); //set stroke for the physics simulation
         ui.makeSliders();
@@ -134,7 +130,7 @@ function initializePhysics(){
     }
 }
 
-function simulate(){
+function simulateMode(){
 
     phys.addForces();
     phys.update();
@@ -144,14 +140,15 @@ function simulate(){
 
 function touchStarted() {
 
-    if(mode == 'welcome'){
+    if(mode == 'welcome')
+    {
         mode = 'input';
     }
 
     else if (mode == 'input')
     {
         startPos = ui.snapToGrid(createVector(mouseX, mouseY));
-        findClosestLine(startPos);
+        interact.findClosestLine(startPos);
 
     }
 
@@ -161,30 +158,17 @@ function touchStarted() {
 
 function touchMoved() {
 
-    if (mode == 'input') {
-        if (cornerSelected) {
-            currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
+    if (mode == 'input')
+    {
+        currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
 
-            geom.deleteIntersections(closestLine.line);
-
-            if (closestLine.start) {
-                closestLine.line.start = currentPos;
-            }
-            else
-            {
-                closestLine.line.end = currentPos;
-            }
-
-            geom.computeIntersections(closestLine.line);
-
-        } else
+        if (interact.isCornerSelected())
         {
-            if (!touchIsMoving) {
-                currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
-                if (startPos.dist(currentPos) < 10) {
-                    touchIsMoving = true;
-                }
-            }
+            interact.updateLine(currentPos);
+        }
+        else if (!touchIsMoving && startPos.dist(currentPos) < 10)
+        {
+            touchIsMoving = true;
         }
     }
 
@@ -193,10 +177,14 @@ function touchMoved() {
 
 function touchEnded() {
 
-    if (mode == 'input') {
-        if (cornerSelected) {
-            cornerSelected = false;
-        } else {
+    if (mode == 'input')
+    {
+        if (interact.isCornerSelected())
+        {
+            interact.setCornerSelected(false);
+        }
+        else
+        {
             endPos = ui.snapToGrid(createVector(mouseX, mouseY));
             if (touchIsMoving) {
                 let newLine = new geom.makeNewLine(startPos, endPos);
@@ -214,51 +202,10 @@ function touchEnded() {
 
     else if(mode == 'setup')
     {
-
-        for (let myNode of phys.nodes)
-        {
-            let mousePos = createVector(mouseX, mouseY);
-            let nodePos = createVector(myNode[0],myNode[1]);
-
-            if (nodePos.dist(mousePos) < 15)
-            {
-                if(!pinnedNodes.containsArray(myNode)){
-                    pinnedNodes.push(myNode);
-                }
-                else{
-                    let index = pinnedNodes.indexOfPoint(myNode);
-                    pinnedNodes.splice(index,1);
-                }
-            }
-        }
+        let mousePos = createVector(mouseX, mouseY);
+        phys.updateNodes(mousePos);
         touchJustEnded = true;
     }
 
     return false;
-}
-
-
-function findClosestLine(myPoint){
-    closestLine = 0;
-
-    for (let myLine of geom.lines) {
-        if (myLine.start.dist(myPoint) < 15)
-        {
-            closestLine = {
-                line: myLine,
-                start: myLine.start
-            };
-        }
-        else if (myLine.end.dist(myPoint) < 15)
-        {
-            closestLine = {
-                line: myLine,
-                end: myLine.end
-            };
-        }
-    }
-
-    if (closestLine != 0 && adjustMode) {
-        cornerSelected = true;
-    }
 }

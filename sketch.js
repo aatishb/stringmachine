@@ -1,34 +1,18 @@
 let startPos, endPos, currentPos;
-let lines = [];
-let intersections = [];
 let touchIsMoving = false;
 let touchJustEnded = true;
 let cornerSelected = false;
-//let touchClicked = false;
 let closestLine;
 let adjustMode = false;
-//let grid = [];
+
 let spacing;
 let mode = 'welcome';
 let debugMode = false;
-//let intersectionPoints = [];
 let myFontSize;
-let mesh = [];
-let nodes = [];
+
 let pinnedNodes = [];
-let particles = [];
-let springs = [];
-let stiffness = 0.2;
-let smoothing = 0.5;
-let accelX = 0;
-let accelY = 0;
-let accelCutoff = 2;
 let backgroundGrid;
 let start,end;
-let subdivisionCount;
-let stiffnessSlider;
-let button1,button2,button3,button4;
-let physics;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -50,7 +34,7 @@ function setup() {
     textSize(0.66 * spacing);
     myFontSize = str(0.75 * spacing) + 'px';
 
-    makeButtons();
+    ui.makeButtons();
     initGrid();
 }
 
@@ -80,8 +64,8 @@ function inputMode() {
     {
         if(debugMode){start = millis();}
         if (debugMode) {
-            console.log('line count: ' + lines.length);
-            console.log('intersection count: ' + intersections.length);
+            console.log('line count: ' + geom.lines.length);
+            console.log('intersection count: ' + geom.intersections.length);
         }
 
         background(51);
@@ -97,21 +81,21 @@ function inputMode() {
         }
 
         // draw lines
-        for (let myLine of lines) {
+        for (let myLine of geom.lines) {
             myLine.drawLine();
         }
 
         // draw intersections
         noStroke();
         fill('red');
-        for (let myIntersection of intersections) {
+        for (let myIntersection of geom.intersections) {
             ellipse(myIntersection.point.x, myIntersection.point.y, 10);
         }
 
         if (adjustMode) {
             noStroke();
             fill('lightblue');
-            for (let myLine of lines) {
+            for (let myLine of geom.lines) {
                 myLine.drawCorners();
             }
         }
@@ -129,31 +113,16 @@ function presetup() {
 
     if(mode == 'input'){
         if(debugMode){start = millis();}
-        subdivisionCount = 0;
 
-        subdivideLines();
+        geom.subdivideLines();
         if(debugMode){
             end = millis();
             var elapsed = end - start;
-            console.log("subdivideLines() took " + elapsed.toFixed(2) + "ms. and ran"+ subdivisionCount + ' times.');
+            console.log("geom.subdivideLines() took " + elapsed.toFixed(2) + "ms. and ran"+ subdivisionCount + ' times.');
         }
         // prune short line segments with only one node
-        pruneLines();
-
-        for (let myLine of lines){
-
-            mesh.push([myLine.start.x,myLine.start.y,myLine.end.x,myLine.end.y]);
-
-            let myPoint1 = [myLine.start.x,myLine.start.y];
-            if(!nodes.containsArray(myPoint1)){
-                nodes.push(myPoint1);
-            }
-
-            let myPoint2 = [myLine.end.x,myLine.end.y];
-            if(!nodes.containsArray(myPoint2)){
-                nodes.push(myPoint2);
-            }
-        }
+        geom.pruneLines();
+        phys.createMesh();
 
         mode = 'setup';
     }
@@ -170,7 +139,7 @@ function setupMode() {
         stroke(200);
 
         // draw lines
-        for (let myLine of lines) {
+        for (let myLine of geom.lines) {
             myLine.drawLine();
         }
 
@@ -178,7 +147,7 @@ function setupMode() {
 
         // draw intersections
         fill('salmon');
-        for (let node of nodes) {
+        for (let node of phys.nodes) {
             ellipse(node[0], node[1], 10);
         }
 
@@ -190,63 +159,26 @@ function setupMode() {
 
         noStroke();
         fill('red');
-        text("Click on the nodes you want to pin. Press simulate when done.", 10, 5 * spacing);
-        text("after simplifying graph, number of lines is " + lines.length + " and number of nodes is " + nodes.length, 10, height - 2 * spacing);
+        text('Click on the nodes you want to pin. Press simulate when done.', 10, 5 * spacing);
+        text('after simplifying graph, number of lines is ' + geom.lines.length + ' and number of nodes is ' + phys.nodes.length, 10, height - 2 * spacing);
 
         touchJustEnded = false;
 
         if(debugMode){
             end = millis();
             var elapsed = end - start;
-            console.log("inputmode() took: " + elapsed.toFixed(2) + "ms.");
+            console.log('inputmode() took: ' + elapsed.toFixed(2) + 'ms.');
         }
     }
 
 }
 
-
 function initializePhysics(){
 
     if(mode == 'setup'){
-        // Initialize the physics
-        physics = new VerletPhysics2D();
-        physics.addBehavior(new GravityBehavior(new Vec2D(0,1)));
-
-        // Set the world's bounding box
-        physics.setWorldBounds(new Rect(0,0,width,height));
-
-        // make particles
-        for(let myNode of nodes){
-            let myParticle = new VerletParticle2D(new Vec2D(myNode[0],myNode[1]));
-            particles.push(myParticle);
-            physics.addParticle(myParticle);
-
-            // lock fixed nodes
-            if(pinnedNodes.containsArray(myNode)){
-                myParticle.lock();
-            }
-        }
-
-        // make strings
-        for(let myLine of mesh)
-        {
-            let x1 = myLine[0];
-            let y1 = myLine[1];
-            let x2 = myLine[2];
-            let y2 = myLine[3];
-
-            let i1 = indexOfPointInArray(nodes,[x1,y1]);
-            let i2 = indexOfPointInArray(nodes,[x2,y2]);
-
-
-            let springLength = createVector(x1,y1).dist(createVector(x2,y2));
-            let mySpring = new VerletSpring2D(particles[i1],particles[i2],springLength,stiffness);
-            springs.push(mySpring);
-            physics.addSpring(mySpring);
-        }
-
+        phys.initializePhysics();
         stroke(200); //set stroke for the physics simulation
-        makeSliders();
+        ui.makeSliders();
         mode = 'simulate';
     }
 }
@@ -255,46 +187,14 @@ function simulate(){
 
     if(debugMode){start = millis();}
 
-    for(let i=0; i<particles.length; i++){
-        if (!particles[i].isLocked){
-
-            accelX = smoothing*accelerationX + (1-smoothing)*accelX ;
-            accelY = smoothing*accelerationY + (1-smoothing)*accelX ;
-
-            if(abs(accelX) > accelCutoff){
-                particles[i].x -= accelX;
-            }
-            if(abs(accelY) > accelCutoff){
-                particles[i].y -= accelY;
-            }
-
-        }
-    }
-
-    // Update the physics world
-    physics.update();
-
-    // This next bit draws lines between the particles
-
-    for(let myLine of mesh){
-
-        let x1 = myLine[0];
-        let y1 = myLine[1];
-        let x2 = myLine[2];
-        let y2 = myLine[3];
-
-        let i1 = indexOfPointInArray(nodes,[x1,y1]);
-        let i2 = indexOfPointInArray(nodes,[x2,y2]);
-
-        line(particles[i1].x,particles[i1].y,particles[i2].x,particles[i2].y);
-
-
-    }
+    phys.addForces();
+    phys.update();
+    phys.drawStrings();
 
     if(debugMode){
         end = millis();
         var elapsed = end - start;
-        console.log("simulate() took: " + elapsed.toFixed(2) + "ms.");
+        console.log('simulate() took: ' + elapsed.toFixed(2) + 'ms.');
     }
 
 }
@@ -313,7 +213,7 @@ function touchStarted() {
 
         closestLine = 0;
 
-        for (let myLine of lines) {
+        for (let myLine of geom.lines) {
             if (myLine.start.dist(startPos) < 15)
             {
                 closestLine = {
@@ -338,7 +238,7 @@ function touchStarted() {
     if(debugMode){
         end = millis();
         var elapsed = end - start;
-        console.log("touchStarted() took: " + elapsed.toFixed(2) + "ms.");
+        console.log('touchStarted() took: ' + elapsed.toFixed(2) + 'ms.');
     }
 
     return false;
@@ -353,7 +253,7 @@ function touchMoved() {
         if (cornerSelected) {
             currentPos = snapToGrid(createVector(mouseX, mouseY));
 
-            deleteIntersections(closestLine.line);
+            geom.deleteIntersections(closestLine.line);
 
             if (closestLine.start) {
                 closestLine.line.start = currentPos;
@@ -363,7 +263,7 @@ function touchMoved() {
                 closestLine.line.end = currentPos;
             }
 
-            computeIntersections(closestLine.line);
+            geom.computeIntersections(closestLine.line);
 
         } else
         {
@@ -379,7 +279,7 @@ function touchMoved() {
     if(debugMode){
         end = millis();
         var elapsed = end - start;
-        console.log("touchMoved() took: " + elapsed + "ms.");
+        console.log('touchMoved() took: ' + elapsed + 'ms.');
     }
 
     return false;
@@ -395,12 +295,12 @@ function touchEnded() {
         } else {
             endPos = snapToGrid(createVector(mouseX, mouseY));
             if (touchIsMoving) {
-                let newLine = new makeNewLine(startPos, endPos);
+                let newLine = new geom.makeNewLine(startPos, endPos);
                 // maybe I shouldn't do this?
                 // computeIntersections computes the intersections but also
                 // detects if the new line is unique
-                if (computeIntersections(newLine) && newLine.lineLength() > 0.1) {
-                    lines.push(newLine);
+                if (geom.computeIntersections(newLine) && newLine.lineLength() > 0.1) {
+                    geom.lines.push(newLine);
                 }
                 touchIsMoving = false;
             }
@@ -410,7 +310,7 @@ function touchEnded() {
 
     else if(mode == 'setup')
     {
-        for (let myNode of nodes)
+        for (let myNode of phys.nodes)
         {
             let mousePos = createVector(mouseX, mouseY);
             let nodePos = createVector(myNode[0],myNode[1]);
@@ -421,7 +321,7 @@ function touchEnded() {
                     pinnedNodes.push(myNode);
                 }
                 else{
-                    let index = indexOfPointInArray(pinnedNodes,myNode);
+                    let index = pinnedNodes.indexOfPoint(myNode);
                     pinnedNodes.splice(index,1);
                 }
             }
@@ -432,7 +332,7 @@ function touchEnded() {
     if(debugMode){
         end = millis();
         var elapsed = end - start;
-        console.log("touchEnded() took: " + elapsed.toFixed(2) + "ms.");
+        console.log('touchEnded() took: ' + elapsed.toFixed(2) + 'ms.');
     }
     return false;
 }
@@ -445,15 +345,15 @@ function toggleSelect() {
 
 function undo() {
     if(mode == 'input'){
-        var myLine = lines.pop();
-        deleteIntersections(myLine);
+        var myLine = geom.lines.pop();
+        geom.deleteIntersections(myLine);
     }
 }
 
 function snapToGrid(myVec) {
 
     // if there's an intersection nearby, snap to that
-    for (let myInt of intersections) {
+    for (let myInt of geom.intersections) {
         if (myVec.dist(myInt.point) <= 0.5*spacing) {
             return myInt.point;
         }
@@ -468,59 +368,6 @@ function snapToGrid(myVec) {
     return createVector(newX, newY);
 }
 
-function deleteElement(array, value) {
-    for (let i = array.length - 1; i >= 0; i--) {
-        if (array[i] == value) {
-            array.splice(i, 1);
-        }
-    }
-}
-
-
-
-function makeButtons() {
-    button1 = createButton('undo');
-    button1.position(19, 19);
-    button1.size(4 * spacing, 2 * spacing);
-    button1.mousePressed(undo);
-    button1.style('font-size', myFontSize);
-
-    button2 = createButton('adjust lines');
-    button2.position(19 + 5 * spacing, 19);
-    button2.size(4 * spacing, 2 * spacing);
-    button2.mousePressed(toggleSelect);
-    button2.style('font-size', myFontSize);
-
-    button3 = createButton('pin it up');
-    button3.position(19 + 5 * 2 * spacing, 19);
-    button3.size(4 * spacing, 2 * spacing);
-    button3.mousePressed(presetup);
-    button3.style('font-size', myFontSize);
-
-    button4 = createButton('simulate');
-    button4.position(19 + 5 * 3 * spacing, 19);
-    button4.size(4 * spacing, 2 * spacing);
-    button4.mousePressed(initializePhysics);
-    button4.style('font-size', myFontSize);
-}
-
-
-function makeSliders(){
-    // create sliders
-    stiffnessSlider = createSlider(0, 255, 100);
-    stiffnessSlider.position(spacing,height-3*spacing);
-    stiffnessSlider.size(3*spacing,spacing);
-    stiffnessSlider.changed(changeStiffness);
-}
-
-function changeStiffness(){
-    stiffness = stiffnessSlider.value()/100;
-
-    for(let spring of springs){
-        spring.setStrength(stiffness);     // change spring stiffness
-    }
-}
-
 
 function initGrid() {
 
@@ -533,32 +380,14 @@ function initGrid() {
     }
 }
 
-Array.prototype.containsArray = function(val)
-{
-    var hash = {};
-    for(var i=0; i<this.length; i++) {
-        hash[this[i]] = i;
-    }
-    return hash.hasOwnProperty(val);
-};
-
-
-function indexOfPointInArray(array, myPoint) {
-    for (var i = 0; i < array.length; i++) {
-        // This if statement depends on the format of your array
-        if (array[i][0] == myPoint[0] && array[i][1] == myPoint[1]) {
-            return i;   // Found it
-        }
-    }
-    return -1;   // Not found
-}
 
 function welcomeScreen(){
     noStroke();
     background(51);
     textAlign(CENTER,CENTER);
     textSize(3*spacing);
-    text("Click to start",width/2,height/2);
+    text('Click to start',width/2,height/2);
 
     textAlign(LEFT);
 }
+

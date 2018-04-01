@@ -386,7 +386,9 @@ function welcomeScreen(){
     background(51);
     textAlign(CENTER,CENTER);
     textSize(3*spacing);
-    text('Click to start',width/2,height/2);
+    text('String Machine',width/2,height/2-2*spacing);
+    textSize(3*spacing);
+    text('Click to start',width/2,height/2+2*spacing);
 
     textAlign(LEFT);
 }

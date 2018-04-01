@@ -3,16 +3,14 @@ let touchIsMoving = false;
 let touchJustEnded = true;
 let cornerSelected = false;
 let closestLine;
-let adjustMode = false;
 
-let spacing;
 let mode = 'welcome';
 let debugMode = false;
-let myFontSize;
+
+let start,end;
 
 let pinnedNodes = [];
 let backgroundGrid;
-let start,end;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -23,19 +21,14 @@ function setup() {
     let w = width;
     let h = height;
 
+    ui.setSpacing(w,h);
 
-    backgroundGrid = createGraphics(w, h);
-    let d = window.pixelDensity();
-    backgroundGrid.scale(1/d);
-    spacing = max(w / 30, h / 30);
+    ui.welcomeScreen(w,h);
 
-    welcomeScreen();
-
-    textSize(0.66 * spacing);
-    myFontSize = str(0.75 * spacing) + 'px';
+    textSize(0.66 * ui.spacing);
 
     ui.makeButtons();
-    initGrid();
+    ui.initGrid(w,h);
 }
 
 function draw() {
@@ -92,7 +85,7 @@ function inputMode() {
             ellipse(myIntersection.point.x, myIntersection.point.y, 10);
         }
 
-        if (adjustMode) {
+        if (ui.adjustMode) {
             noStroke();
             fill('lightblue');
             for (let myLine of geom.lines) {
@@ -159,8 +152,8 @@ function setupMode() {
 
         noStroke();
         fill('red');
-        text('Click on the nodes you want to pin. Press simulate when done.', 10, 5 * spacing);
-        text('after simplifying graph, number of lines is ' + geom.lines.length + ' and number of nodes is ' + phys.nodes.length, 10, height - 2 * spacing);
+        text('Click on the nodes you want to pin. Press simulate when done.', 10, 5 * ui.spacing);
+        text('after simplifying graph, number of lines is ' + geom.lines.length + ' and number of nodes is ' + phys.nodes.length, 10, height - 2 * ui.spacing);
 
         touchJustEnded = false;
 
@@ -209,7 +202,7 @@ function touchStarted() {
 
     else if (mode == 'input')
     {
-        startPos = snapToGrid(createVector(mouseX, mouseY));
+        startPos = ui.snapToGrid(createVector(mouseX, mouseY));
 
         closestLine = 0;
 
@@ -230,7 +223,7 @@ function touchStarted() {
             }
         }
 
-        if (closestLine != 0 && adjustMode) {
+        if (closestLine != 0 && ui.adjustMode) {
             cornerSelected = true;
         }
     }
@@ -251,7 +244,7 @@ function touchMoved() {
 
     if (mode == 'input') {
         if (cornerSelected) {
-            currentPos = snapToGrid(createVector(mouseX, mouseY));
+            currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
 
             geom.deleteIntersections(closestLine.line);
 
@@ -268,7 +261,7 @@ function touchMoved() {
         } else
         {
             if (!touchIsMoving) {
-                currentPos = snapToGrid(createVector(mouseX, mouseY));
+                currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
                 if (startPos.dist(currentPos) < 10) {
                     touchIsMoving = true;
                 }
@@ -293,7 +286,7 @@ function touchEnded() {
         if (cornerSelected) {
             cornerSelected = false;
         } else {
-            endPos = snapToGrid(createVector(mouseX, mouseY));
+            endPos = ui.snapToGrid(createVector(mouseX, mouseY));
             if (touchIsMoving) {
                 let newLine = new geom.makeNewLine(startPos, endPos);
                 // maybe I shouldn't do this?
@@ -335,61 +328,5 @@ function touchEnded() {
         console.log('touchEnded() took: ' + elapsed.toFixed(2) + 'ms.');
     }
     return false;
-}
-
-function toggleSelect() {
-    if(mode=='input'){
-	   adjustMode = !adjustMode;
-    }
-}
-
-function undo() {
-    if(mode == 'input'){
-        var myLine = geom.lines.pop();
-        geom.deleteIntersections(myLine);
-    }
-}
-
-function snapToGrid(myVec) {
-
-    // if there's an intersection nearby, snap to that
-    for (let myInt of geom.intersections) {
-        if (myVec.dist(myInt.point) <= 0.5*spacing) {
-            return myInt.point;
-        }
-    }
-
-    // implement this later
-    // if there's a line nearby, snap to that
-
-    // else snap to the grid
-    let newX = round(myVec.x / spacing) * spacing;
-    let newY = round(myVec.y / spacing) * spacing;
-    return createVector(newX, newY);
-}
-
-
-function initGrid() {
-
-    backgroundGrid.noStroke();
-    backgroundGrid.fill(200, 50);
-    for (var x = 0; x <= width; x += spacing) {
-        for (var y = 0; y <= height; y += spacing) {
-            backgroundGrid.ellipse(x, y, 3);
-        }
-    }
-}
-
-
-function welcomeScreen(){
-    noStroke();
-    background(51);
-    textAlign(CENTER,CENTER);
-    textSize(3*spacing);
-    text('String Machine',width/2,height/2-2*spacing);
-    textSize(3*spacing);
-    text('Click to start',width/2,height/2+2*spacing);
-
-    textAlign(LEFT);
 }
 

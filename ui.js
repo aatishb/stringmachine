@@ -2,12 +2,39 @@ var ui = function() {
 
     let button1,button2,button3,button4;
     let stiffnessSlider;
+    let spacing;
+    let myFontSize;
+    let adjustMode = false;
+
+    function setSpacing(w,h){
+        spacing = max(w / 30, h / 30);
+        myFontSize = str(0.75 * spacing) + 'px';
+    }
+
+    function welcomeScreen(w,h){
+        noStroke();
+        background(51);
+        textAlign(CENTER,CENTER);
+        textSize(3*spacing);
+        text('String Machine',w/2,h/2-2*spacing);
+        textSize(3*spacing);
+        text('Click to start',w/2,h/2+2*spacing);
+
+        textAlign(LEFT);
+    }
+
+    function toggleSelect() {
+        if(mode=='input'){
+           adjustMode = !adjustMode;
+        }
+    }
+
 
     function makeButtons() {
         button1 = createButton('undo');
         button1.position(19, 19);
         button1.size(4 * spacing, 2 * spacing);
-        button1.mousePressed(undo);
+        button1.mousePressed(geom.deletePreviousLine);
         button1.style('font-size', myFontSize);
 
         button2 = createButton('adjust lines');
@@ -38,10 +65,48 @@ var ui = function() {
         stiffnessSlider.changed(phys.changeStiffness);
     }
 
+    function snapToGrid(myVec) {
+
+        // if there's an intersection nearby, snap to that
+        for (let myInt of geom.intersections) {
+            if (myVec.dist(myInt.point) <= 0.5*spacing) {
+                return myInt.point;
+            }
+        }
+
+        // implement this later
+        // if there's a line nearby, snap to that
+
+        // else snap to the grid
+        let newX = round(myVec.x / spacing) * spacing;
+        let newY = round(myVec.y / spacing) * spacing;
+        return createVector(newX, newY);
+    }
+
+    function initGrid(w,h) {
+
+        backgroundGrid = createGraphics(w, h);
+        let d = window.pixelDensity();
+        backgroundGrid.scale(1/d);
+        backgroundGrid.noStroke();
+        backgroundGrid.fill(200, 50);
+        for (var x = 0; x <= width; x += spacing) {
+            for (var y = 0; y <= height; y += spacing) {
+                backgroundGrid.ellipse(x, y, 3);
+            }
+        }
+    }
+
 
     return {
+        spacing: spacing,
+        adjustMode: adjustMode,
+        setSpacing: setSpacing,
         makeButtons: makeButtons,
-        makeSliders: makeSliders
+        makeSliders: makeSliders,
+        welcomeScreen: welcomeScreen,
+        snapToGrid: snapToGrid,
+        initGrid: initGrid
     };
 
 }();

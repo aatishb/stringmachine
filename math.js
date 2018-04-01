@@ -352,6 +352,13 @@ var geom = function() {
         }
     }
 
+    function deletePreviousLine() {
+        if(mode == 'input'){
+            var myLine = geom.lines.pop();
+            geom.deleteIntersections(myLine);
+        }
+    }
+
 
     function hasSameCoordinates(line1, line2) {
         if (line1.start.x == line2.start.x &&
@@ -382,6 +389,7 @@ var geom = function() {
         deleteIntersections: deleteIntersections,
         makeNewLine: makeNewLine,
         subdivideLines: subdivideLines,
-        pruneLines: pruneLines
+        pruneLines: pruneLines,
+        deletePreviousLine: deletePreviousLine
     };
 }();

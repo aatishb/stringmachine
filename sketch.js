@@ -1,11 +1,13 @@
 let startPos, endPos, currentPos;
 let touchIsMoving = false;
 let touchJustEnded = true;
-let cornerSelected = false;
-let closestLine;
 
 let mode = 'welcome';
 let debugMode = false;
+let adjustMode = false;
+let cornerSelected = false;
+let closestLine = 0;
+
 
 let start,end;
 
@@ -46,20 +48,12 @@ function draw() {
         simulate(); // simulate physics
     }
 
-    //let fps = frameRate();
-    //console.log("FPS: " + fps.toFixed(2));
-
 }
 
 function inputMode() {
 
     if (touchIsMoving || touchJustEnded || cornerSelected)
     {
-        if(debugMode){start = millis();}
-        if (debugMode) {
-            console.log('line count: ' + geom.lines.length);
-            console.log('intersection count: ' + geom.intersections.length);
-        }
 
         background(51);
         image(backgroundGrid, 0, 0, width, height);
@@ -67,53 +61,32 @@ function inputMode() {
 
 
         if (touchIsMoving) {
-            // draw current line
             if (!cornerSelected) {
-                line(startPos.x, startPos.y, mouseX, mouseY);
+                line(startPos.x, startPos.y, mouseX, mouseY); // draw current line
             }
         }
 
-        // draw lines
-        for (let myLine of geom.lines) {
-            myLine.drawLine();
-        }
+        geom.drawLines();
 
         // draw intersections
         noStroke();
         fill('red');
-        for (let myIntersection of geom.intersections) {
-            ellipse(myIntersection.point.x, myIntersection.point.y, 10);
-        }
+        geom.drawIntersections();
 
-        if (ui.adjustMode) {
+        if (adjustMode) {
             noStroke();
             fill('lightblue');
-            for (let myLine of geom.lines) {
-                myLine.drawCorners();
-            }
+            geom.drawCorners();
         }
 
         touchJustEnded = false;
-        if(debugMode){
-            end = millis();
-            var elapsed = end - start;
-            console.log('inputmode() took: ' + elapsed.toFixed(2) + 'ms.');
-        }
     }
 }
 
 function presetup() {
 
     if(mode == 'input'){
-        if(debugMode){start = millis();}
-
         geom.subdivideLines();
-        if(debugMode){
-            end = millis();
-            var elapsed = end - start;
-            console.log("geom.subdivideLines() took " + elapsed.toFixed(2) + "ms. and ran"+ subdivisionCount + ' times.');
-        }
-        // prune short line segments with only one node
         geom.pruneLines();
         phys.createMesh();
 
@@ -125,43 +98,26 @@ function presetup() {
 function setupMode() {
 
     if(touchJustEnded){
-        if(debugMode){start = millis();}
-
         background(51);
         image(backgroundGrid, 0, 0, width, height);
         stroke(200);
 
-        // draw lines
-        for (let myLine of geom.lines) {
-            myLine.drawLine();
-        }
+        geom.drawLines();
 
         noStroke();
 
         // draw intersections
         fill('salmon');
-        for (let node of phys.nodes) {
-            ellipse(node[0], node[1], 10);
-        }
+        phys.drawNodes();
 
         // draw pinned nodes
         fill('dodgerblue');
-        for (let node of pinnedNodes){
-            ellipse(node[0],node[1],15);
-        }
+        phys.drawPinnedNodes();
 
-        noStroke();
         fill('red');
-        text('Click on the nodes you want to pin. Press simulate when done.', 10, 5 * ui.spacing);
-        text('after simplifying graph, number of lines is ' + geom.lines.length + ' and number of nodes is ' + phys.nodes.length, 10, height - 2 * ui.spacing);
+        ui.pinText();
 
         touchJustEnded = false;
-
-        if(debugMode){
-            end = millis();
-            var elapsed = end - start;
-            console.log('inputmode() took: ' + elapsed.toFixed(2) + 'ms.');
-        }
     }
 
 }
@@ -169,32 +125,24 @@ function setupMode() {
 function initializePhysics(){
 
     if(mode == 'setup'){
+
         phys.initializePhysics();
         stroke(200); //set stroke for the physics simulation
         ui.makeSliders();
+
         mode = 'simulate';
     }
 }
 
 function simulate(){
 
-    if(debugMode){start = millis();}
-
     phys.addForces();
     phys.update();
     phys.drawStrings();
 
-    if(debugMode){
-        end = millis();
-        var elapsed = end - start;
-        console.log('simulate() took: ' + elapsed.toFixed(2) + 'ms.');
-    }
-
 }
 
 function touchStarted() {
-
-    if(debugMode){start = millis();}
 
     if(mode == 'welcome'){
         mode = 'input';
@@ -203,35 +151,8 @@ function touchStarted() {
     else if (mode == 'input')
     {
         startPos = ui.snapToGrid(createVector(mouseX, mouseY));
+        findClosestLine(startPos);
 
-        closestLine = 0;
-
-        for (let myLine of geom.lines) {
-            if (myLine.start.dist(startPos) < 15)
-            {
-                closestLine = {
-                    line: myLine,
-                    start: myLine.start
-                };
-            }
-            else if (myLine.end.dist(startPos) < 15)
-            {
-                closestLine = {
-                    line: myLine,
-                    end: myLine.end
-                };
-            }
-        }
-
-        if (closestLine != 0 && ui.adjustMode) {
-            cornerSelected = true;
-        }
-    }
-
-    if(debugMode){
-        end = millis();
-        var elapsed = end - start;
-        console.log('touchStarted() took: ' + elapsed.toFixed(2) + 'ms.');
     }
 
     return false;
@@ -239,8 +160,6 @@ function touchStarted() {
 
 
 function touchMoved() {
-
-    if(debugMode){start = millis();}
 
     if (mode == 'input') {
         if (cornerSelected) {
@@ -269,18 +188,10 @@ function touchMoved() {
         }
     }
 
-    if(debugMode){
-        end = millis();
-        var elapsed = end - start;
-        console.log('touchMoved() took: ' + elapsed + 'ms.');
-    }
-
     return false;
 }
 
 function touchEnded() {
-
-    if(debugMode){start = millis();}
 
     if (mode == 'input') {
         if (cornerSelected) {
@@ -303,6 +214,7 @@ function touchEnded() {
 
     else if(mode == 'setup')
     {
+
         for (let myNode of phys.nodes)
         {
             let mousePos = createVector(mouseX, mouseY);
@@ -322,11 +234,31 @@ function touchEnded() {
         touchJustEnded = true;
     }
 
-    if(debugMode){
-        end = millis();
-        var elapsed = end - start;
-        console.log('touchEnded() took: ' + elapsed.toFixed(2) + 'ms.');
-    }
     return false;
 }
 
+
+function findClosestLine(myPoint){
+    closestLine = 0;
+
+    for (let myLine of geom.lines) {
+        if (myLine.start.dist(myPoint) < 15)
+        {
+            closestLine = {
+                line: myLine,
+                start: myLine.start
+            };
+        }
+        else if (myLine.end.dist(myPoint) < 15)
+        {
+            closestLine = {
+                line: myLine,
+                end: myLine.end
+            };
+        }
+    }
+
+    if (closestLine != 0 && adjustMode) {
+        cornerSelected = true;
+    }
+}

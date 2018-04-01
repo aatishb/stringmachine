@@ -116,6 +116,18 @@ var phys = function() {
         }
     }
 
+    function drawNodes(){
+        for (let node of phys.nodes) {
+            ellipse(node[0], node[1], 10);
+        }
+    }
+
+    function drawPinnedNodes(){
+        for (let node of pinnedNodes){
+            ellipse(node[0],node[1],15);
+        }
+    }
+
     return {
         mesh: mesh,
         nodes: nodes,
@@ -124,6 +136,8 @@ var phys = function() {
         update: update,
         drawStrings: drawStrings,
         createMesh: createMesh,
-        changeStiffness: changeStiffness
+        changeStiffness: changeStiffness,
+        drawNodes: drawNodes,
+        drawPinnedNodes: drawPinnedNodes
     };
 }();

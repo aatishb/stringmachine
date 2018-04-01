@@ -4,6 +4,18 @@ var geom = function() {
     let lines = [];
     let intersections = [];
 
+    function drawLines(){
+        // draw lines
+        for (let myLine of lines) {
+            myLine.drawLine();
+        }
+    }
+
+    function drawIntersections(){
+        for (let myIntersection of geom.intersections) {
+            ellipse(myIntersection.point.x, myIntersection.point.y, 10);
+        }
+    }
 
     // public function
     // computes intersections between a new line and all existing lines
@@ -230,6 +242,13 @@ var geom = function() {
         return pointsOfIntersection;
     }
 
+    function drawCorners() {
+        for (let myLine of lines) {
+            ellipse(myLine.start.x, myLine.start.y, 10);
+            ellipse(myLine.end.x, myLine.end.y, 10);
+        }
+    }
+
     // public function
     // line object
     var makeNewLine = function(start, end) {
@@ -239,11 +258,6 @@ var geom = function() {
 
         this.drawLine = function() {
             line(this.start.x, this.start.y, this.end.x, this.end.y);
-        };
-
-        this.drawCorners = function() {
-            ellipse(this.start.x, this.start.y, 10);
-            ellipse(this.end.x, this.end.y, 10);
         };
 
         this.lineLength = function() {
@@ -390,6 +404,9 @@ var geom = function() {
         makeNewLine: makeNewLine,
         subdivideLines: subdivideLines,
         pruneLines: pruneLines,
-        deletePreviousLine: deletePreviousLine
+        deletePreviousLine: deletePreviousLine,
+        drawLines: drawLines,
+        drawIntersections: drawIntersections,
+        drawCorners: drawCorners
     };
 }();

@@ -4,7 +4,6 @@ var ui = function() {
     let stiffnessSlider;
     let spacing;
     let myFontSize;
-    let adjustMode = false;
 
     function setSpacing(w,h){
         spacing = max(w / 30, h / 30);
@@ -23,12 +22,11 @@ var ui = function() {
         textAlign(LEFT);
     }
 
-    function toggleSelect() {
-        if(mode=='input'){
-           adjustMode = !adjustMode;
-        }
+    function pinText(){
+        textSize(0.6*spacing);
+        text('Click on the nodes you want to pin. Press simulate when done.', 10, 3 * spacing);
+        text('Your structure has ' + geom.lines.length + ' springs (lines) and ' + phys.nodes.length + ' particles (endpoints)', 10, height - spacing);
     }
-
 
     function makeButtons() {
         button1 = createButton('undo');
@@ -40,7 +38,7 @@ var ui = function() {
         button2 = createButton('adjust lines');
         button2.position(19 + 5 * spacing, 19);
         button2.size(4 * spacing, 2 * spacing);
-        button2.mousePressed(toggleSelect);
+        button2.mousePressed(interact.toggleAdjustMode);
         button2.style('font-size', myFontSize);
 
         button3 = createButton('pin it up');
@@ -100,13 +98,13 @@ var ui = function() {
 
     return {
         spacing: spacing,
-        adjustMode: adjustMode,
         setSpacing: setSpacing,
         makeButtons: makeButtons,
         makeSliders: makeSliders,
         welcomeScreen: welcomeScreen,
         snapToGrid: snapToGrid,
-        initGrid: initGrid
+        initGrid: initGrid,
+        pinText: pinText
     };
 
 }();

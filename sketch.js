@@ -52,6 +52,13 @@ function inputMode() {
         image(backgroundGrid, 0, 0, width, height);
         stroke(200);
 
+        if(touchWasClicked){
+            let spacing = ui.getSpacing();
+            text('touch detected at frame '+frameCount,10, height - 3*spacing);
+            text(str(startPos),10, height - 2*spacing);
+            text(str(endPos),10, height - spacing);
+        }
+
         // if touch is moving and nothing is grabbed
         // it means we should draw a new line
         if (touchIsMoving && !interact.isCornerGrabbed())
@@ -183,7 +190,7 @@ function touchMoved() {
         {
             interact.updateLine(currentPos);
         }
-        else if (!touchIsMoving && startPos.dist(currentPos) < 15)
+        else if (!touchIsMoving && startPos.dist(currentPos) < 10)
         {
             touchIsMoving = true;
         }

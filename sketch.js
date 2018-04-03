@@ -64,6 +64,7 @@ function inputMode() {
 
         if(debugFlag){
             text(debugLine.start + ' ' + debugLine.end,10, height - 4*spacing);
+            debugFlag = false;
         }
 
         // if touch is moving and nothing is grabbed

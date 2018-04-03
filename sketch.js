@@ -63,7 +63,7 @@ function inputMode() {
         }
 
         if(debugFlag){
-            text(debugLine.start + ' ' + debugLine.end,10, height - 4*spacing);
+            text(geom.lines.length + ' lines added',10, height - 4*spacing);
             debugFlag = false;
         }
 

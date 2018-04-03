@@ -1,7 +1,7 @@
 var interact = function() {
 
     let closestLine = 0;
-    let cornerSelected = false;
+    let cornerGrabbed = false;
 
     function findClosestLine(myPoint){
         closestLine = 0;
@@ -25,7 +25,7 @@ var interact = function() {
 
         if (closestLine != 0 && ui.getAdjustMode())
         {
-            cornerSelected = true;
+            cornerGrabbed = true;
         }
     }
 
@@ -49,19 +49,19 @@ var interact = function() {
         return closestLine;
     }
 
-    function isCornerSelected(){
-        return cornerSelected;
+    function isCornerGrabbed(){
+        return cornerGrabbed;
     }
 
-    function setCornerSelected(myVal){
-        cornerSelected = myVal;
+    function setCornerGrabbed(myVal){
+        cornerGrabbed = myVal;
     }
 
     return {
         getClosestLine: getClosestLine,
         findClosestLine: findClosestLine,
-        isCornerSelected: isCornerSelected,
-        setCornerSelected: setCornerSelected,
+        isCornerGrabbed: isCornerGrabbed,
+        setCornerGrabbed: setCornerGrabbed,
         updateLine: updateLine
     };
 

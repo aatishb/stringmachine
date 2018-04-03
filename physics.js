@@ -30,7 +30,7 @@ var phys = function() {
             physics.addParticle(myParticle);
 
             // lock fixed nodes
-            if(pinnedNodes.containsArray(myNode))
+            if(pinnedNodes.containsPoint(myNode))
             {
                 myParticle.lock();
             }
@@ -46,7 +46,6 @@ var phys = function() {
 
             let i1 = nodes.indexOfPoint([x1,y1]);
             let i2 = nodes.indexOfPoint([x2,y2]);
-
 
             let springLength = createVector(x1,y1).dist(createVector(x2,y2));
             let mySpring = new VerletSpring2D(particles[i1],particles[i2],springLength,stiffness);
@@ -103,13 +102,13 @@ var phys = function() {
             mesh.push([myLine.start.x,myLine.start.y,myLine.end.x,myLine.end.y]);
 
             let myPoint1 = [myLine.start.x,myLine.start.y];
-            if(!nodes.containsArray(myPoint1))
+            if(!nodes.containsPoint(myPoint1))
             {
                 nodes.push(myPoint1);
             }
 
             let myPoint2 = [myLine.end.x,myLine.end.y];
-            if(!nodes.containsArray(myPoint2))
+            if(!nodes.containsPoint(myPoint2))
             {
                 nodes.push(myPoint2);
             }
@@ -147,7 +146,7 @@ var phys = function() {
 
             if (nodePos.dist(myPoint) < 15)
             {
-                if(!pinnedNodes.containsArray(myNode)){
+                if(!pinnedNodes.containsPoint(myNode)){
                     pinnedNodes.push(myNode);
                 }
                 else{

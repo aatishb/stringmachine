@@ -210,6 +210,7 @@ function touchEnded() {
                 // detects if the new line is unique
                 if (geom.computeIntersections(newLine)) {
                     geom.lines.push(newLine);
+                    //console.log('lines: '+geom.lines.length+' intersections: '+geom.intersections.length);
                 }
                 touchIsMoving = false;
             }

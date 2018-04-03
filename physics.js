@@ -47,6 +47,7 @@ var phys = function() {
             let i1 = nodes.indexOfPoint([x1,y1]);
             let i2 = nodes.indexOfPoint([x2,y2]);
 
+
             let springLength = createVector(x1,y1).dist(createVector(x2,y2));
             let mySpring = new VerletSpring2D(particles[i1],particles[i2],springLength,stiffness);
             springs.push(mySpring);

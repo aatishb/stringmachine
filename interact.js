@@ -1,52 +1,51 @@
 var interact = function() {
 
-    let closestLine = 0;
+    let lineWithCornerGrabbed = 0;
     let cornerGrabbed = false;
 
-    function findClosestLine(myPoint){
-        closestLine = 0;
+    function selectNearbyCorner(myPoint){
+        lineWithCornerGrabbed = 0;
 
-        for (let myLine of geom.lines) {
-            if (myLine.start.dist(myPoint) < 15)
+        for(let myLine of geom.lines){
+            let nearestPointInfo = myLine.distanceToCorner(myPoint);
+
+            if(nearestPointInfo.dist < ui.getSpacing()/2)
             {
-                closestLine = {
-                    line: myLine,
-                    start: myLine.start
-                };
-            }
-            else if (myLine.end.dist(myPoint) < 15)
-            {
-                closestLine = {
-                    line: myLine,
-                    end: myLine.end
-                };
+                if(nearestPointInfo.isCorner == 'start'){
+                    lineWithCornerGrabbed = {
+                        line: myLine,
+                        whichCorner: 'start'
+                    };
+                }
+                else if (nearestPointInfo.isCorner == 'end'){
+                    lineWithCornerGrabbed = {
+                        line: myLine,
+                        whichCorner: 'end'
+                    };
+                }
             }
         }
 
-        if (closestLine != 0 && ui.getAdjustMode())
+        if (lineWithCornerGrabbed != 0 && ui.getAdjustMode())
         {
             cornerGrabbed = true;
         }
     }
 
     function updateLine(myPos){
-        geom.deleteIntersections(closestLine.line);
+        geom.deleteIntersections(lineWithCornerGrabbed.line);
 
-        if (closestLine.start)
+        if (lineWithCornerGrabbed.whichCorner == 'start')
         {
-            closestLine.line.start = myPos;
+            lineWithCornerGrabbed.line.start = myPos;
         }
-        else
+        else if(lineWithCornerGrabbed.whichCorner == 'end')
         {
-            closestLine.line.end = myPos;
+            lineWithCornerGrabbed.line.end = myPos;
         }
 
-        geom.computeIntersections(closestLine.line);
+        geom.computeIntersections(lineWithCornerGrabbed.line);
 
-    }
-
-    function getClosestLine(){
-        return closestLine;
     }
 
     function isCornerGrabbed(){
@@ -58,8 +57,7 @@ var interact = function() {
     }
 
     return {
-        getClosestLine: getClosestLine,
-        findClosestLine: findClosestLine,
+        selectNearbyCorner: selectNearbyCorner,
         isCornerGrabbed: isCornerGrabbed,
         setCornerGrabbed: setCornerGrabbed,
         updateLine: updateLine

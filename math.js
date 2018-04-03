@@ -3,6 +3,7 @@ var geom = function() {
     // public variables
     let lines = [];
     let intersections = [];
+    let pixelThreshold = 0.1;
 
     function drawLines(){
         // draw lines
@@ -46,7 +47,7 @@ var geom = function() {
                             let myIndex = -1;
                             for (let myInt of intersections)
                             {
-                                if (myPoint.dist(myInt.point) < 0.1)
+                                if (myPoint.dist(myInt.point) < pixelThreshold)
                                 {
                                     isDuplicate = true;
                                     myIndex = intersections.indexOf(myInt);
@@ -185,7 +186,7 @@ var geom = function() {
         // for details of below formula.
         let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
-        if (val == 0)
+        if (abs(val) < pixelThreshold)
         {
             return 0;
         } // colinear
@@ -205,7 +206,7 @@ var geom = function() {
     // point q lies on line segment 'pr'
     function onSegment(p, q, r) {
 
-        if (abs(p.dist(q) + q.dist(r) - p.dist(r)) < 0.1)
+        if (abs(p.dist(q) + q.dist(r) - p.dist(r)) < pixelThreshold)
         {
             return true;
         }
@@ -245,17 +246,17 @@ var geom = function() {
         { // lines are parallel
             if (abs(numerator1) < cutoff || abs(numerator2) < cutoff)
             { // lines are overlapping
-                if (lineContainsPoint(line1, line2.start))
+                if (line1.containsPoint(line2.start))
                 { // lines overlap
                     pointsOfIntersection.push(createVector(line2.start.x, line2.start.y));
                 }
-                if (lineContainsPoint(line1, line2.end)) { // lines overlap
+                if (line1.containsPoint(line2.end)) { // lines overlap
                     pointsOfIntersection.push(createVector(line2.end.x, line2.end.y));
                 }
-                if (lineContainsPoint(line2, line1.start)) { // lines overlap
+                if (line2.containsPoint(line1.start)) { // lines overlap
                     pointsOfIntersection.push(createVector(line1.start.x, line1.start.y));
                 }
-                if (lineContainsPoint(line2, line1.end)) { // lines overlap
+                if (line2.containsPoint(line1.end)) { // lines overlap
                     pointsOfIntersection.push(createVector(line1.end.x, line1.end.y));
                 }
             }
@@ -274,27 +275,102 @@ var geom = function() {
 
     // public function
     // line object
-    var makeNewLine = function(start, end) {
+    var makeNewLine = function(start, end)
+    {
 
         this.start = start;
         this.end = end;
 
-        this.drawLine = function() {
+        this.drawLine = function()
+        {
             line(this.start.x, this.start.y, this.end.x, this.end.y);
         };
 
-        this.lineLength = function() {
+        this.lineLength = function()
+        {
             let a = this.start;
             let b = this.end;
             return a.dist(b);
         };
-        this.whoami = function() {
+        this.whoami = function()
+        {
             console.log('x1: ' + round(this.start.x) + ' y1: ' + round(this.start.y) + 'x2: ' + round(this.end.x) + ' y2: ' + round(this.end.y));
         };
+
+        this.f = function(myPoint,t)
+        {
+            return p5.Vector.mult(this.start,1-t).add(p5.Vector.mult(this.end,t)).sub(myPoint);
+        };
+
+        this.distanceToCorner = function(myPoint)
+        {
+            let distToStart = sqrt(this.f(myPoint,0).magSq());
+            let distToEnd = sqrt(this.f(myPoint,1).magSq());
+            if(distToStart<distToEnd)
+            {
+                return {
+                    point: this.start,
+                    dist: distToStart,
+                    isCorner: 'start'
+                };
+            }
+            else
+            {
+                return {
+                    point: this.end,
+                    dist: distToEnd,
+                    isCorner: 'end'
+                };
+            }
+        };
+
+        this.nearestPointOnLine = function(myPoint)
+        {
+            let closestPoint;
+
+            let v = p5.Vector.sub(this.start,this.end);
+            let u = p5.Vector.sub(this.start,myPoint);
+            let t = v.dot(u)/v.magSq();
+
+            if(t > 0 && t < 1)
+            {
+                closestPoint = this.f(myPoint,t);
+                return {
+                    point: p5.Vector.add(closestPoint,myPoint),
+                    dist: closestPoint.magSq(),
+                    isCorner: false
+                };
+            }
+            else
+            {
+                return this.distanceToCorner(myPoint);
+            }
+        };
+
+        // checks if given line contains a point
+        this.containsPoint = function(myPoint) {
+
+            let a = this.start;
+            let b = this.end;
+            let c = myPoint;
+
+            let dist = abs(a.dist(c) + c.dist(b) - a.dist(b));
+            console.log('dist: '+dist);
+            if (dist < pixelThreshold)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        };
+
     };
 
 
-    // checks if given line contains a point
+  // checks if given line contains a point
     function lineContainsPoint(myLine, myPoint) {
 
         let a = myLine.start;
@@ -378,7 +454,8 @@ var geom = function() {
     }
 
     // public function
-    function pruneLines(){
+    function pruneLines()
+    {
         for (let myLine of lines.slice())
         {
             let countIntersections = 0;
@@ -400,15 +477,18 @@ var geom = function() {
         }
     }
 
-    function deletePreviousLine() {
-        if(mode == 'input'){
+    function deletePreviousLine()
+    {
+        if(mode == 'input')
+        {
             var myLine = geom.lines.pop();
             geom.deleteIntersections(myLine);
         }
     }
 
 
-    function hasSameCoordinates(line1, line2) {
+    function hasSameCoordinates(line1, line2)
+    {
         if (line1.start.x == line2.start.x &&
             line1.start.y == line2.start.y &&
             line1.end.x == line2.end.x &&

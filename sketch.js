@@ -1,10 +1,7 @@
 let startPos, endPos, currentPos;
 let touchIsMoving = false;
 let touchWasClicked = true;
-
 let mode = 'welcome';
-
-let backgroundGrid;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -49,14 +46,15 @@ function inputMode() {
     {
 
         background(51);
-        image(backgroundGrid, 0, 0, width, height);
+        ui.drawGrid();
         stroke(200);
 
         // if touch is moving and nothing is grabbed
         // it means we should draw a new line
         if (touchIsMoving && !interact.isCornerGrabbed())
         {
-            line(startPos.x, startPos.y, mouseX, mouseY);
+            let roundStartPos = ui.snapToGrid(startPos);
+            line(roundStartPos.x, roundStartPos.y, mouseX, mouseY);
         }
 
         // draw existing lines
@@ -104,7 +102,7 @@ function setupMode() {
     if(touchWasClicked)
     {
         background(51);
-        image(backgroundGrid, 0, 0, width, height);
+        ui.drawGrid();
         stroke(200);
 
         geom.drawLines();
@@ -166,8 +164,8 @@ function touchStarted() {
     else if (mode == 'input')
     {
         // find closest line and vertex to the mouse
-        startPos = ui.snapToGrid(createVector(mouseX, mouseY));
-        interact.findClosestLine(startPos);
+        startPos = createVector(mouseX, mouseY);
+        interact.selectNearbyCorner(startPos);
     }
 
     return false;
@@ -177,11 +175,11 @@ function touchStarted() {
 function touchMoved() {
     if (mode == 'input')
     {
-        currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
+        currentPos = createVector(mouseX, mouseY);
 
         if (interact.isCornerGrabbed())
         {
-            interact.updateLine(currentPos);
+            interact.updateLine(ui.snapToGrid(currentPos));
         }
         else if (startPos.dist(currentPos) > 10)
         {
@@ -202,16 +200,16 @@ function touchEnded() {
         }
         else
         {
-            endPos = ui.snapToGrid(createVector(mouseX, mouseY));
+            endPos = createVector(mouseX, mouseY);
             if (touchIsMoving) {
-                let newLine = new geom.makeNewLine(startPos, endPos);
+                let newLine = new geom.makeNewLine(ui.snapToGrid(startPos), ui.snapToGrid(endPos));
                 // maybe I shouldn't do this?
                 // computeIntersections computes the intersections but also
                 // detects if the new line is unique
                 if (geom.computeIntersections(newLine)) {
                     geom.lines.push(newLine);
-                    //console.log('lines: '+geom.lines.length+' intersections: '+geom.intersections.length);
                 }
+                console.log('lines: '+geom.lines.length+' intersections: '+geom.intersections.length)
                 touchIsMoving = false;
             }
         }

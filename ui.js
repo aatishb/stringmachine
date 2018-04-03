@@ -5,6 +5,7 @@ var ui = function() {
     let spacing;
     let myFontSize;
     let adjustMode = false;
+    let backgroundGrid;
 
     function getAdjustMode() {
         return adjustMode;
@@ -90,13 +91,32 @@ var ui = function() {
             }
         }
 
-        // implement this later
+
         // if there's a line nearby, snap to that
+        for (let myLine of geom.lines)
+        {
+            let myLineInfo = myLine.nearestPointOnLine(myVec);
+            if(!myLineInfo.isCorner && myLineInfo.dist <= 0.5*spacing){
+
+                // check if the nearest grid point on the line
+                let nearX = round(myVec.x / spacing) * spacing;
+                let nearY = round(myVec.y / spacing) * spacing;
+                let nearbyGridPoint = createVector(nearX,nearY);
+                // if yes, snap to that
+                if(myLine.containsPoint(nearbyGridPoint)){
+                    return nearbyGridPoint;
+                }
+                // otherwise snap to the line
+                else{
+                    return myLineInfo.point;
+                }
+            }
+        }
 
         // else snap to the grid
-        let newX = round(myVec.x / spacing) * spacing;
-        let newY = round(myVec.y / spacing) * spacing;
-        return createVector(newX, newY);
+        let nearX = round(myVec.x / spacing) * spacing;
+        let nearY = round(myVec.y / spacing) * spacing;
+        return createVector(nearX, nearY);
     }
 
     function initGrid(w,h) {
@@ -113,6 +133,9 @@ var ui = function() {
         }
     }
 
+    function drawGrid(w,h){
+        image(backgroundGrid, 0, 0, w, h);
+    }
 
     return {
         getSpacing: getSpacing,
@@ -124,7 +147,8 @@ var ui = function() {
         initGrid: initGrid,
         pinText: pinText,
         toggleAdjustMode: toggleAdjustMode,
-        getAdjustMode: getAdjustMode
+        getAdjustMode: getAdjustMode,
+        drawGrid: drawGrid
     };
 
 }();

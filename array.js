@@ -34,4 +34,3 @@ Array.prototype.containsPoint = function(myPoint)
     return false;   // Not found
 };
 
-

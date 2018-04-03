@@ -198,7 +198,7 @@ function touchMoved() {
         {
             interact.updateLine(currentPos);
         }
-        else if (startPos.dist(currentPos) < 10)
+        else if (startPos.dist(currentPos) > 10)
         {
             touchIsMoving = true;
         }

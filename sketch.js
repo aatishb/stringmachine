@@ -1,6 +1,6 @@
 let startPos, endPos, currentPos;
 let touchIsMoving = false;
-let touchJustEnded = true;
+let touchWasClicked = true;
 
 let mode = 'welcome';
 
@@ -36,7 +36,6 @@ function draw() {
 
     else if (mode == 'simulate')
     {
-        background(51);
         simulateMode(); // simulate physics
     }
 
@@ -44,22 +43,23 @@ function draw() {
 
 function inputMode() {
 
-    if (touchIsMoving || touchJustEnded || interact.isCornerSelected())
+    // to save CPU, only redraw when there is a touch movement,
+    // a recent click, or a corner is grabbed
+    if (touchIsMoving || touchWasClicked || interact.isCornerGrabbed())
     {
 
         background(51);
         image(backgroundGrid, 0, 0, width, height);
         stroke(200);
 
-
-        if (touchIsMoving)
+        // if touch is moving and nothing is grabbed
+        // it means we should draw a new line
+        if (touchIsMoving && !interact.isCornerGrabbed())
         {
-            if (!interact.isCornerSelected())
-            {
-                line(startPos.x, startPos.y, mouseX, mouseY); // draw current line
-            }
+            line(startPos.x, startPos.y, mouseX, mouseY);
         }
 
+        // draw existing lines
         geom.drawLines();
 
         // draw intersections
@@ -67,6 +67,7 @@ function inputMode() {
         fill('red');
         geom.drawIntersections();
 
+        // adjust mode highlights corners
         if (ui.getAdjustMode())
         {
             noStroke();
@@ -74,26 +75,33 @@ function inputMode() {
             geom.drawCorners();
         }
 
-        touchJustEnded = false;
+        // set this back to false so that in the absence of touch movement
+        // the draw loop is not being refreshsed
+        touchWasClicked = false;
     }
 }
 
+// the 'pin it up' button triggers this function
+// this simplifies the graph structure to prepare for the physics simulation
+// runs only one
 function presetup() {
-
+    // only accept input coming from input mode
     if(mode == 'input')
     {
         geom.subdivideLines();
         geom.pruneLines();
         phys.createMesh();
 
-        mode = 'setup';
+        mode = 'setup'; // switch to setup mode
     }
 }
 
-
+// presetup leads us here
+// runs in draw loop in setup mode
+// this redraws the screen on touch click
 function setupMode() {
 
-    if(touchJustEnded)
+    if(touchWasClicked)
     {
         background(51);
         image(backgroundGrid, 0, 0, width, height);
@@ -110,14 +118,19 @@ function setupMode() {
         fill('dodgerblue');
         phys.drawPinnedNodes();
 
+        // print text instructions
         fill('red');
         ui.pinText();
 
-        touchJustEnded = false;
+        touchWasClicked = false;
     }
 
 }
 
+// the simulate button leads here
+// this is just a launcher for new UI elements
+// and leads to the real initalize physics function
+// this runs only once
 function initializePhysics(){
 
     if(mode == 'setup')
@@ -126,12 +139,16 @@ function initializePhysics(){
         stroke(200); //set stroke for the physics simulation
         ui.makeSliders();
 
-        mode = 'simulate';
+        mode = 'simulate'; // switch to simulate mode
     }
 }
 
+// initializePhysics leads here
+// runs in draw loop in simulate mode
+// updates physics world and redraws
 function simulateMode(){
 
+    background(51);
     phys.addForces();
     phys.update();
     phys.drawStrings();
@@ -140,6 +157,7 @@ function simulateMode(){
 
 function touchStarted() {
 
+    // hack to get around need for initial touch input
     if(mode == 'welcome')
     {
         mode = 'input';
@@ -147,9 +165,9 @@ function touchStarted() {
 
     else if (mode == 'input')
     {
+        // find closest line and vertex to the mouse
         startPos = ui.snapToGrid(createVector(mouseX, mouseY));
         interact.findClosestLine(startPos);
-
     }
 
     return false;
@@ -157,16 +175,15 @@ function touchStarted() {
 
 
 function touchMoved() {
-
     if (mode == 'input')
     {
         currentPos = ui.snapToGrid(createVector(mouseX, mouseY));
 
-        if (interact.isCornerSelected())
+        if (interact.isCornerGrabbed())
         {
             interact.updateLine(currentPos);
         }
-        else if (!touchIsMoving && startPos.dist(currentPos) < 10)
+        else if (!touchIsMoving && startPos.dist(currentPos) < 15)
         {
             touchIsMoving = true;
         }
@@ -179,9 +196,9 @@ function touchEnded() {
 
     if (mode == 'input')
     {
-        if (interact.isCornerSelected())
+        if (interact.isCornerGrabbed())
         {
-            interact.setCornerSelected(false);
+            interact.setCornerGrabbed(false);
         }
         else
         {
@@ -197,14 +214,14 @@ function touchEnded() {
                 touchIsMoving = false;
             }
         }
-        touchJustEnded = true;
+        touchWasClicked = true;
     }
 
     else if(mode == 'setup')
     {
         let mousePos = createVector(mouseX, mouseY);
         phys.updateNodes(mousePos);
-        touchJustEnded = true;
+        touchWasClicked = true;
     }
 
     return false;

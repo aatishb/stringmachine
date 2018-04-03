@@ -390,6 +390,7 @@ var geom = function() {
                     countIntersections++;
                 }
             }
+
             if(countIntersections < 2 && myLine.lineLength() < 0.9*ui.getSpacing())
             {
                 //console.log("deleting line");

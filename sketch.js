@@ -1,10 +1,7 @@
 let startPos, endPos, currentPos;
 let touchIsMoving = false;
 let touchWasClicked = true;
-
 let mode = 'welcome';
-
-let backgroundGrid;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -49,7 +46,7 @@ function inputMode() {
     {
 
         background(51);
-        image(backgroundGrid, 0, 0, width, height);
+        ui.drawGrid();
         stroke(200);
 
         // if touch is moving and nothing is grabbed
@@ -104,7 +101,7 @@ function setupMode() {
     if(touchWasClicked)
     {
         background(51);
-        image(backgroundGrid, 0, 0, width, height);
+        ui.drawGrid();
         stroke(200);
 
         geom.drawLines();
@@ -167,7 +164,7 @@ function touchStarted() {
     {
         // find closest line and vertex to the mouse
         startPos = ui.snapToGrid(createVector(mouseX, mouseY));
-        interact.findClosestLine(startPos);
+        interact.selectNearbyCorner(startPos);
     }
 
     return false;

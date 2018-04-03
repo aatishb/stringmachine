@@ -291,6 +291,47 @@ var geom = function() {
         this.whoami = function() {
             console.log('x1: ' + round(this.start.x) + ' y1: ' + round(this.start.y) + 'x2: ' + round(this.end.x) + ' y2: ' + round(this.end.y));
         };
+
+        this.f = function(myPoint,t){
+            return p5.Vector.mult(this.start,1-t).sum(p5.Vector.mult(this.end,t)).sub(myPoint);
+        }
+        // following math in https://math.stackexchange.com/a/2193733
+        this.nearestPointOnLine = function(myPoint){
+            let closestPoint;
+
+            let v = p5.Vector.sub(this.start,this.end);
+            let u = p5.Vector.sub(this.start,this.point);
+            let t = -v.dot(u)/(v.magSq);
+
+
+            if(t > 0 && t < 1){
+                closestPoint = this.f(myPoint,t);
+                return {
+                    point: p5.Vector.sub(closestPoint,myPoint),
+                    dist: closestPoint.magSq,
+                    isCorner: false
+                };
+            }
+            else{
+                let g0 = this.f(myPoint,0).magSq;
+                let g1 = this.f(myPoint,1).magSq;
+                if(g0<g1){
+                    return {
+                        point: this.start,
+                        dist: g0,
+                        isCorner: true
+                    };
+                }
+                else if(g1 < g0){
+                    return {
+                        point: this.end,
+                        dist: g1,
+                        isCorner: true
+                    };
+                }
+            }
+
+        };
     };
 
 

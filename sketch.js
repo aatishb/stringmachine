@@ -6,6 +6,9 @@ let mode = 'welcome';
 
 let backgroundGrid;
 
+let debugFlag = false;
+let debugLine;
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
     stroke(200);
@@ -52,11 +55,15 @@ function inputMode() {
         image(backgroundGrid, 0, 0, width, height);
         stroke(200);
 
+        let spacing = ui.getSpacing();
         if(touchWasClicked){
-            let spacing = ui.getSpacing();
             text('touch detected at frame '+frameCount,10, height - 3*spacing);
             text(str(startPos),10, height - 2*spacing);
             text(str(endPos),10, height - spacing);
+        }
+
+        if(debugFlag){
+            text(debugLine.start + ' ' + debugLine.end,10, height - 4*spacing);
         }
 
         // if touch is moving and nothing is grabbed
@@ -190,7 +197,7 @@ function touchMoved() {
         {
             interact.updateLine(currentPos);
         }
-        else if (!touchIsMoving && startPos.dist(currentPos) < 10)
+        else if (startPos.dist(currentPos) < 10)
         {
             touchIsMoving = true;
         }
@@ -212,10 +219,12 @@ function touchEnded() {
             endPos = ui.snapToGrid(createVector(mouseX, mouseY));
             if (touchIsMoving) {
                 let newLine = new geom.makeNewLine(startPos, endPos);
+                debugFlag = true;
+                debugLine = newLine;
                 // maybe I shouldn't do this?
                 // computeIntersections computes the intersections but also
                 // detects if the new line is unique
-                if (geom.computeIntersections(newLine) && newLine.lineLength() > 0.1) {
+                if (geom.computeIntersections(newLine)) {
                     geom.lines.push(newLine);
                 }
                 touchIsMoving = false;

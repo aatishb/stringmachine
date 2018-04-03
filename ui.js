@@ -5,7 +5,6 @@ var ui = function() {
     let spacing;
     let myFontSize;
     let adjustMode = false;
-    let backgroundGrid;
 
     function getAdjustMode() {
         return adjustMode;
@@ -94,7 +93,6 @@ var ui = function() {
         // implement this later
         // if there's a line nearby, snap to that
 
-
         // else snap to the grid
         let newX = round(myVec.x / spacing) * spacing;
         let newY = round(myVec.y / spacing) * spacing;
@@ -115,9 +113,6 @@ var ui = function() {
         }
     }
 
-    function drawGrid(w,h){
-        image(backgroundGrid, 0, 0, w, h);
-    }
 
     return {
         getSpacing: getSpacing,
@@ -129,8 +124,7 @@ var ui = function() {
         initGrid: initGrid,
         pinText: pinText,
         toggleAdjustMode: toggleAdjustMode,
-        getAdjustMode: getAdjustMode,
-        drawGrid: drawGrid
+        getAdjustMode: getAdjustMode
     };
 
 }();

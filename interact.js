@@ -1,48 +1,52 @@
 var interact = function() {
 
-    let lineWithCornerGrabbed = 0;
+    let closestLine = 0;
     let cornerGrabbed = false;
 
-    function selectNearbyCorner(myPoint){
-        lineWithCornerGrabbed = 0;
+    function findClosestLine(myPoint){
+        closestLine = 0;
 
         for (let myLine of geom.lines) {
             if (myLine.start.dist(myPoint) < 15)
             {
-                lineWithCornerGrabbed = {
+                closestLine = {
                     line: myLine,
                     start: myLine.start
                 };
             }
             else if (myLine.end.dist(myPoint) < 15)
             {
-                lineWithCornerGrabbed = {
+                closestLine = {
                     line: myLine,
                     end: myLine.end
                 };
             }
         }
 
-        if (lineWithCornerGrabbed != 0 && ui.getAdjustMode())
+        if (closestLine != 0 && ui.getAdjustMode())
         {
             cornerGrabbed = true;
         }
     }
 
     function updateLine(myPos){
-        geom.deleteIntersections(lineWithCornerGrabbed.line);
+        geom.deleteIntersections(closestLine.line);
 
-        if (lineWithCornerGrabbed.start)
+        if (closestLine.start)
         {
-            lineWithCornerGrabbed.line.start = myPos;
+            closestLine.line.start = myPos;
         }
         else
         {
-            lineWithCornerGrabbed.line.end = myPos;
+            closestLine.line.end = myPos;
         }
 
-        geom.computeIntersections(lineWithCornerGrabbed.line);
+        geom.computeIntersections(closestLine.line);
 
+    }
+
+    function getClosestLine(){
+        return closestLine;
     }
 
     function isCornerGrabbed(){
@@ -54,7 +58,8 @@ var interact = function() {
     }
 
     return {
-        selectNearbyCorner: selectNearbyCorner,
+        getClosestLine: getClosestLine,
+        findClosestLine: findClosestLine,
         isCornerGrabbed: isCornerGrabbed,
         setCornerGrabbed: setCornerGrabbed,
         updateLine: updateLine

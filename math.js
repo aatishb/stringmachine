@@ -25,7 +25,7 @@ var geom = function() {
     // returns false if the line is exactly on top of another line
     function computeIntersections(newLine) {
 
-        if(newLine.lineLength() <= 0.1)
+        if(newLine.lineLength() <= pixelThreshold)
         {
             return false;
         }
@@ -233,9 +233,8 @@ var geom = function() {
         let numerator2 = (x2 - x1) * (y1 - y3) - (y2 - y3) * (x1 - x3);
 
         let pointsOfIntersection = [];
-        let cutoff = 0.1;
 
-        if (abs(denominator) > cutoff)
+        if (abs(denominator) > pixelThreshold)
         {
             let u = numerator1 / denominator;
             let x = x1 + u * (x2 - x1);
@@ -244,7 +243,7 @@ var geom = function() {
         }
         else
         { // lines are parallel
-            if (abs(numerator1) < cutoff || abs(numerator2) < cutoff)
+            if (abs(numerator1) < pixelThreshold || abs(numerator2) < pixelThreshold)
             { // lines are overlapping
                 if (line1.containsPoint(line2.start))
                 { // lines overlap
@@ -370,24 +369,6 @@ var geom = function() {
     };
 
 
-  // checks if given line contains a point
-    function lineContainsPoint(myLine, myPoint) {
-
-        let a = myLine.start;
-        let b = myLine.end;
-        let c = myPoint;
-
-        if (abs(a.dist(c) + c.dist(b) - a.dist(b)) < 0.1)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-
-    }
-
     // public function
     function subdivideLines() {
         for (let myLine of lines.slice())
@@ -399,9 +380,9 @@ var geom = function() {
             for (let myIntersection of intersections)
             {
                 let myPoint = myIntersection.point;
-                if(lineContainsPoint(myLine,myPoint) &&
-                    myPoint.dist(start) > 0.1 &&
-                    myPoint.dist(end) > 0.1)
+                if(myLine.containsPoint(myPoint) &&
+                    myPoint.dist(start) > pixelThreshold &&
+                    myPoint.dist(end) > pixelThreshold)
                 {
                     pointsOnLine.push(myPoint);
                 }
@@ -410,7 +391,7 @@ var geom = function() {
             if(pointsOnLine.length>0)
             {
                 // sort these points along with the start and end point of the line
-                if(abs(start.x-end.x) > 0.1)
+                if(abs(start.x-end.x) > pixelThreshold)
                 {
                     if(start.x < end.x)
                     {
@@ -423,7 +404,7 @@ var geom = function() {
                         pointsOnLine.sort(function(a,b) {return b.x-a.x;});
                     }
                 }
-                else if(abs(start.y - end.y)>0.1)
+                else if(abs(start.y - end.y)>pixelThreshold)
                 {
                     if(start.y < end.y)
                     {
@@ -461,14 +442,14 @@ var geom = function() {
             let countIntersections = 0;
             for (let myIntersection of intersections)
             {
-                if (myIntersection.point.dist(myLine.start) < 0.1 ||
-                myIntersection.point.dist(myLine.end) < 0.1)
+                if (myIntersection.point.dist(myLine.start) < pixelThreshold ||
+                myIntersection.point.dist(myLine.end) < pixelThreshold)
                 {
                     countIntersections++;
                 }
             }
 
-            if(countIntersections < 2 && myLine.lineLength() < 0.9*ui.getSpacing())
+            if(countIntersections < 2 && myLine.lineLength() < 0.7*ui.getSpacing())
             {
                 //console.log("deleting line");
                 deleteElement(lines,myLine);

@@ -296,15 +296,15 @@ var geom = function() {
             console.log('x1: ' + round(this.start.x) + ' y1: ' + round(this.start.y) + 'x2: ' + round(this.end.x) + ' y2: ' + round(this.end.y));
         };
 
-        this.f = function(myPoint,t)
+        this.distanceToPointOnLine = function(myPoint,t)
         {
             return p5.Vector.mult(this.start,1-t).add(p5.Vector.mult(this.end,t)).sub(myPoint);
         };
 
         this.distanceToCorner = function(myPoint)
         {
-            let distToStart = sqrt(this.f(myPoint,0).magSq());
-            let distToEnd = sqrt(this.f(myPoint,1).magSq());
+            let distToStart = sqrt(this.distanceToPointOnLine(myPoint,0).magSq());
+            let distToEnd = sqrt(this.distanceToPointOnLine(myPoint,1).magSq());
             if(distToStart<distToEnd)
             {
                 return {
@@ -333,7 +333,7 @@ var geom = function() {
 
             if(t > 0 && t < 1)
             {
-                closestPoint = this.f(myPoint,t);
+                closestPoint = this.distanceToPointOnLine(myPoint,t);
                 return {
                     point: p5.Vector.add(closestPoint,myPoint),
                     dist: closestPoint.magSq(),
@@ -354,7 +354,6 @@ var geom = function() {
             let c = myPoint;
 
             let dist = abs(a.dist(c) + c.dist(b) - a.dist(b));
-            console.log('dist: '+dist);
             if (dist < pixelThreshold)
             {
                 return true;

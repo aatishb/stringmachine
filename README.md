@@ -3,7 +3,7 @@
 ### TODO
 
 - [x] snap to line
-- [ ] mouse dragging of cloth
+- [x] mouse dragging of cloth
 - [ ] basic save ability
 - [ ] add sliders (to adjust spring stiffness, etc.)
 - [ ] improve gui

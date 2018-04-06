@@ -1,6 +1,7 @@
 let startPos, endPos, currentPos;
 let touchIsMoving = false;
 let touchWasClicked = true;
+let touchIsPressed;
 let mode = 'welcome';
 
 function setup() {
@@ -151,6 +152,12 @@ function simulateMode(){
     phys.update();
     phys.drawStrings();
 
+    if(touchIsPressed)
+    {
+        let mousePos = createVector(mouseX, mouseY);
+        phys.stickToMouse(mousePos);
+    }
+
 }
 
 function touchStarted() {
@@ -167,6 +174,8 @@ function touchStarted() {
         startPos = createVector(mouseX, mouseY);
         interact.selectNearbyCorner(startPos);
     }
+
+    touchIsPressed = true;
 
     return false;
 }
@@ -222,6 +231,8 @@ function touchEnded() {
         phys.updateNodes(mousePos);
         touchWasClicked = true;
     }
+
+    touchIsPressed = false;
 
     return false;
 }

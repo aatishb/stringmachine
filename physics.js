@@ -8,6 +8,7 @@ var phys = function() {
     let accelX = 0;
     let accelY = 0;
     let accelCutoff = 2;
+    let nearestParticle = 0;
 
     let mesh = [];
     let nodes = [];
@@ -76,6 +77,53 @@ var phys = function() {
             }
         }
 
+    }
+
+    function stickToMouse(myMousePos){
+
+        // runs when mouse is pressed in simulate mode
+        // searches for the closest particle near the mouse
+        // and gives it the mouse position
+
+        // maybe overkill? could just find a nearby particle
+        // (rather than the nearest) and stick it to mouse
+
+
+        let spacing = ui.getSpacing();
+        let nearestParticlePos = createVector(nearestParticle.x,nearestParticle.y);
+        let nearestParticleDist = nearestParticlePos.dist(myMousePos);
+
+        for(let myParticle of particles){
+
+            let particlePos = createVector(myParticle.x,myParticle.y);
+            let distToMouse = particlePos.dist(myMousePos)
+
+            if(distToMouse < spacing)
+            {
+                if(nearestParticle){
+                    if(distToMouse < nearestParticleDist){
+                        nearestParticle = myParticle;
+                        nearestParticleDist = distToMouse;
+                    }
+                }
+                else
+                {
+                    nearestParticle = myParticle;
+                    nearestParticlePos = distToMouse
+                }
+            }
+        }
+
+        if(nearestParticle)
+        {
+            if(!nearestParticle.isLocked)
+            {
+                nearestParticle.lock();
+                nearestParticle.x = mouseX;
+                nearestParticle.y = mouseY;
+                nearestParticle.unlock();
+            }
+        }
     }
 
     function update(){
@@ -169,6 +217,7 @@ var phys = function() {
         changeStiffness: changeStiffness,
         drawNodes: drawNodes,
         drawPinnedNodes: drawPinnedNodes,
-        updateNodes: updateNodes
+        updateNodes: updateNodes,
+        stickToMouse: stickToMouse
     };
 }();

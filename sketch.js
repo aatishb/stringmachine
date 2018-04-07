@@ -126,6 +126,10 @@ function setupMode() {
 
 }
 
+function gotoNext(){
+    initializePhysics();
+    presetup();
+}
 // the simulate button leads here
 // this is just a launcher for new UI elements
 // and leads to the real initalize physics function
@@ -136,7 +140,7 @@ function initializePhysics(){
     {
         phys.initializePhysics();
         stroke(200); //set stroke for the physics simulation
-        ui.makeSliders();
+        //ui.makeSliders();
 
         mode = 'simulate'; // switch to simulate mode
     }

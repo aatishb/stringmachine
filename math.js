@@ -20,6 +20,12 @@ var geom = function() {
         }
     }
 
+    function deleteAll(){
+        lines.length = 0;
+        intersections.length = 0;
+    }
+
+
     // public function
     // computes intersections between a new line and all existing lines
     // returns false if the line is exactly on top of another line
@@ -493,6 +499,7 @@ var geom = function() {
     return {
         lines: lines,
         intersections: intersections,
+        deleteAll: deleteAll,
         computeIntersections: computeIntersections,
         deleteIntersections: deleteIntersections,
         makeNewLine: makeNewLine,

@@ -4,6 +4,8 @@ var ui = function() {
     let stiffnessSlider;
     let spacing;
     let myFontSize;
+    let smallButtonSize;
+    let bigButtonSize;
     let adjustMode = false;
     let backgroundGrid;
 
@@ -22,9 +24,16 @@ var ui = function() {
         }
     }
 
+    function clearAll() {
+        geom.deleteAll();
+        phys.deleteAll();
+    }
+
     function setSpacing(w,h){
         spacing = max(w / 30, h / 30);
         myFontSize = str(0.75 * spacing) + 'px';
+        smallButtonSize = str(1 * spacing) + 'px';
+        bigButtonSize = str(2 * spacing) + 'px';
     }
 
     function welcomeScreen(w,h){
@@ -41,34 +50,69 @@ var ui = function() {
 
     function pinText(){
         textSize(0.6*spacing);
-        text('Click on the nodes you want to pin. Press simulate when done.', 10, 3 * spacing);
-        text('Your structure has ' + geom.lines.length + ' springs (lines) and ' + phys.nodes.length + ' particles (endpoints)', 10, height - spacing);
+        textAlign(CENTER);
+        text('Click on the nodes you want to pin. Press play when done.', width/2, 2.5 * spacing);
+        text('Your structure has ' + geom.lines.length + ' springs (lines) and ' + phys.nodes.length + ' particles (endpoints)', width/2, height - spacing);
     }
 
     function makeButtons() {
-        button1 = createButton('undo');
-        button1.position(19, 19);
-        button1.size(4 * spacing, 2 * spacing);
-        button1.mousePressed(geom.deletePreviousLine);
-        button1.style('font-size', myFontSize);
 
-        button2 = createButton('adjust lines');
-        button2.position(19 + 5 * spacing, 19);
-        button2.size(4 * spacing, 2 * spacing);
-        button2.mousePressed(toggleAdjustMode);
-        button2.style('font-size', myFontSize);
+        let darkRed = color(199, 0, 57)
 
-        button3 = createButton('pin it up');
+        let middleButtons = [];
+
+        let undo = createSpan('');
+        undo.html('<i class="fas fa-undo"></i>');
+        undo.mousePressed(geom.deletePreviousLine);
+        undo.style('font-size', smallButtonSize);
+        undo.style('color', darkRed);
+        middleButtons.push(undo);
+
+        let move = createSpan('');
+        move.html('<i class="fas fa-arrows-alt"></i>')
+        move.mousePressed(toggleAdjustMode);
+        move.style('font-size', smallButtonSize);
+        move.style('color', darkRed);
+        middleButtons.push(move);
+
+        let clearScreen = createSpan('');
+        clearScreen.html('<i class="fas fa-trash-alt"></i>')
+        clearScreen.mousePressed(clearAll);
+        clearScreen.style('font-size', smallButtonSize);
+        clearScreen.style('color', darkRed);
+        middleButtons.push(clearScreen);
+
+        let numMiddlebuttons = middleButtons.length;
+        let count = 1;
+        for(let myButton of middleButtons){
+            let xPos = map(count,0,numMiddlebuttons+1,20+2*spacing,width-20-2*spacing)
+            myButton.position(xPos,20);
+            count++;
+        }
+
+
+        let next = createSpan('');
+        next.html('<i class="far fa-caret-square-right"></i>')
+        next.mousePressed(gotoNext);
+        next.style('font-size', bigButtonSize);
+        next.style('color', darkRed);
+        next.position(width-20-2*spacing,20);
+
+
+        /*
+        button3 = createSpan('pinitup');
         button3.position(19 + 5 * 2 * spacing, 19);
         button3.size(4 * spacing, 2 * spacing);
         button3.mousePressed(presetup);
         button3.style('font-size', myFontSize);
 
-        button4 = createButton('simulate');
+        button4 = createSpan('simulate');
         button4.position(19 + 5 * 3 * spacing, 19);
         button4.size(4 * spacing, 2 * spacing);
         button4.mousePressed(initializePhysics);
         button4.style('font-size', myFontSize);
+        */
+
     }
 
 

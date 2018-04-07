@@ -14,6 +14,14 @@ var phys = function() {
     let nodes = [];
     let pinnedNodes = [];
 
+    function deleteAll(){
+        particles.length = 0;
+        springs.length = 0;
+        mesh.length = 0;
+        nodes.length = 0;
+        pinnedNodes.length = 0;
+    }
+
 
     function initializePhysics(){
         // Initialize the physics
@@ -209,6 +217,7 @@ var phys = function() {
     return {
         mesh: mesh,
         nodes: nodes,
+        deleteAll: deleteAll,
         initializePhysics: initializePhysics,
         addForces: addForces,
         update: update,

@@ -17,6 +17,7 @@ function setup() {
     ui.welcomeScreen(w,h);
     textSize(0.66 * ui.getSpacing());
     ui.makeButtons();
+    ui.hideButtonsDuringInput();
     ui.initGrid(w,h);
 }
 
@@ -43,6 +44,7 @@ var inputMode = function() {
 
     function init(){
         if(mode != 'input'){
+            ui.hideButtonsDuringInput();
             mode = 'input';
         }
     }
@@ -101,7 +103,8 @@ var setupMode = function() {
 
     function init(){
         if (mode !='setup'){
-            // only accept input coming from input mode
+            ui.hideButtonsDuringSetup();
+
             geom.subdivideLines();
             geom.pruneLines();
             phys.deleteAll()
@@ -178,6 +181,8 @@ var simulateMode = function(){
 
         if(mode != 'simulate')
         {
+            ui.hideButtonsDuringSimulate();
+
             phys.initializePhysics();
             stroke(200); //set stroke for the physics simulation
             //ui.makeSliders();

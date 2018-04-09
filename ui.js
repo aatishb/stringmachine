@@ -27,6 +27,7 @@ var ui = function() {
     function clearAll() {
         geom.deleteAll();
         phys.deleteAll();
+        mode = 'input';
     }
 
     function setSpacing(w,h){
@@ -52,7 +53,7 @@ var ui = function() {
         textSize(0.6*spacing);
         textAlign(CENTER);
         text('Click on the nodes you want to pin. Press play when done.', width/2, 2.5 * spacing);
-        text('Your structure has ' + geom.lines.length + ' springs (lines) and ' + phys.nodes.length + ' particles (endpoints)', width/2, height - spacing);
+        text('Your structure has ' + geom.lines.length + ' springs (edges) and ' + phys.nodes.length + ' masses (vertices)', width/2, height - spacing);
     }
 
     function makeButtons() {
@@ -86,10 +87,16 @@ var ui = function() {
         let count = 1;
         for(let myButton of middleButtons){
             let xPos = map(count,0,numMiddlebuttons+1,20+2*spacing,width-20-2*spacing)
-            myButton.position(xPos,20);
+            myButton.position(xPos,20+0.5*spacing);
             count++;
         }
 
+        let prev = createSpan('');
+        prev.html('<i class="far fa-caret-square-left"></i>')
+        prev.mousePressed(gotoPrev);
+        prev.style('font-size', bigButtonSize);
+        prev.style('color', darkRed);
+        prev.position(20,20);
 
         let next = createSpan('');
         next.html('<i class="far fa-caret-square-right"></i>')

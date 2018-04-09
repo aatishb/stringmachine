@@ -192,7 +192,7 @@ var phys = function() {
     function drawPinnedNodes(){
         for (let node of pinnedNodes)
         {
-            ellipse(node[0],node[1],15);
+            ellipse(node[0],node[1],0.5*ui.getSpacing());
         }
     }
 
@@ -201,7 +201,7 @@ var phys = function() {
         {
             let nodePos = createVector(myNode[0],myNode[1]);
 
-            if (nodePos.dist(myPoint) < 15)
+            if (nodePos.dist(myPoint) < 0.5*ui.getSpacing())
             {
                 if(!pinnedNodes.containsPoint(myNode)){
                     pinnedNodes.push(myNode);

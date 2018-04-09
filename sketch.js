@@ -24,155 +24,199 @@ function draw() {
 
     if (mode == 'input')
     {
-        inputMode(); // inputs the mesh
+        inputMode.draw(); // inputs the mesh
     }
 
     else if (mode == 'setup')
     {
-        setupMode(); // pin the nodes
+        setupMode.draw(); // pin the nodes
     }
 
     else if (mode == 'simulate')
     {
-        simulateMode(); // simulate physics
+        simulateMode.draw(); // simulate physics
     }
 
 }
 
-function inputMode() {
+var inputMode = function() {
 
-    // to save CPU, only redraw when there is a touch movement,
-    // a recent click, or a corner is grabbed
-    if (touchIsMoving || touchWasClicked || interact.isCornerGrabbed())
-    {
-
-        background(51);
-        ui.drawGrid();
-        stroke(200);
-
-        // if touch is moving and nothing is grabbed
-        // it means we should draw a new line
-        if (touchIsMoving && !interact.isCornerGrabbed())
-        {
-            let roundStartPos = ui.snapToGrid(startPos);
-            line(roundStartPos.x, roundStartPos.y, mouseX, mouseY);
+    function init(){
+        if(mode != 'input'){
+            mode = 'input';
         }
+    }
 
-        // draw existing lines
-        geom.drawLines();
-
-        // draw intersections
-        noStroke();
-        fill('red');
-        geom.drawIntersections();
-
-        // adjust mode highlights corners
-        if (ui.getAdjustMode())
+    function draw(){
+        // to save CPU, only redraw when there is a touch movement,
+        // a recent click, or a corner is grabbed
+        if (touchIsMoving || touchWasClicked || interact.isCornerGrabbed())
         {
+
+            background(51);
+            ui.drawGrid();
+            stroke(200);
+
+            // if touch is moving and nothing is grabbed
+            // it means we should draw a new line
+            if (touchIsMoving && !interact.isCornerGrabbed())
+            {
+                let roundStartPos = ui.snapToGrid(startPos);
+                line(roundStartPos.x, roundStartPos.y, mouseX, mouseY);
+            }
+
+            // draw existing lines
+            geom.drawLines();
+
+            // draw intersections
             noStroke();
-            fill('lightblue');
-            geom.drawCorners();
+            fill('red');
+            geom.drawIntersections();
+
+            // adjust mode highlights corners
+            if (ui.getAdjustMode())
+            {
+                noStroke();
+                fill('lightblue');
+                geom.drawCorners();
+            }
+
+            // set this back to false so that in the absence of touch movement
+            // the draw loop is not being refreshsed
+            touchWasClicked = false;
         }
-
-        // set this back to false so that in the absence of touch movement
-        // the draw loop is not being refreshsed
-        touchWasClicked = false;
-    }
-}
-
-// the 'pin it up' button triggers this function
-// this simplifies the graph structure to prepare for the physics simulation
-// runs only one
-function presetup() {
-    // only accept input coming from input mode
-    if(mode == 'input')
-    {
-        geom.subdivideLines();
-        geom.pruneLines();
-        phys.createMesh();
-
-        mode = 'setup'; // switch to setup mode
-    }
-}
-
-// presetup leads us here
-// runs in draw loop in setup mode
-// this redraws the screen on touch click
-function setupMode() {
-
-    if(touchWasClicked)
-    {
-        background(51);
-        ui.drawGrid();
-        stroke(200);
-
-        geom.drawLines();
-        noStroke();
-
-        // draw intersections
-        fill('salmon');
-        phys.drawNodes();
-
-        // draw pinned nodes
-        fill('dodgerblue');
-        phys.drawPinnedNodes();
-
-        // print text instructions
-        fill('red');
-        ui.pinText();
-
-        touchWasClicked = false;
     }
 
-}
+    return {
+        init: init,
+        draw: draw
+    };
+}();
+
+var setupMode = function() {
+
+    // the 'pin it up' button triggers this function
+    // this simplifies the graph structure to prepare for the physics simulation
+    // runs only one
+
+    function init(){
+        if (mode !='setup'){
+            // only accept input coming from input mode
+            geom.subdivideLines();
+            geom.pruneLines();
+            phys.deleteAll()
+            phys.createMesh();
+
+            mode = 'setup'; // switch to setup mode
+        }
+    }
+
+    // presetup leads us here
+    // runs in draw loop in setup mode
+    // this redraws the screen on touch click
+
+    function draw(){
+        if(touchWasClicked)
+        {
+            background(51);
+            ui.drawGrid();
+            stroke(200);
+
+            geom.drawLines();
+            noStroke();
+
+            // draw intersections
+            fill('salmon');
+            phys.drawNodes();
+
+            // draw pinned nodes
+            fill('dodgerblue');
+            phys.drawPinnedNodes();
+
+            // print text instructions
+            fill('red');
+            ui.pinText();
+
+            touchWasClicked = false;
+        }
+    }
+
+    return {
+        init: init,
+        draw: draw
+    };
+
+}();
 
 function gotoNext(){
-    initializePhysics();
-    presetup();
-}
-// the simulate button leads here
-// this is just a launcher for new UI elements
-// and leads to the real initalize physics function
-// this runs only once
-function initializePhysics(){
-
-    if(mode == 'setup')
-    {
-        phys.initializePhysics();
-        stroke(200); //set stroke for the physics simulation
-        //ui.makeSliders();
-
-        mode = 'simulate'; // switch to simulate mode
+    if(mode == 'input'){
+        setupMode.init();
+    }
+    else if(mode=='setup'){
+        simulateMode.init();
     }
 }
 
-// initializePhysics leads here
-// runs in draw loop in simulate mode
-// updates physics world and redraws
-function simulateMode(){
+function gotoPrev(){
+    if(mode == 'simulate'){
+        setupMode.init();
+    }
+    else if(mode=='setup'){
+        inputMode.init();
+    }
+}
 
-    background(51);
-    phys.addForces();
-    phys.update();
-    phys.drawStrings();
 
-    if(touchIsPressed)
-    {
-        let mousePos = createVector(mouseX, mouseY);
-        phys.stickToMouse(mousePos);
+var simulateMode = function(){
+
+    // the simulate button leads here
+    // this is just a launcher for new UI elements
+    // and leads to the real initalize physics function
+    // this runs only once
+
+    function init(){
+
+        if(mode != 'simulate')
+        {
+            phys.initializePhysics();
+            stroke(200); //set stroke for the physics simulation
+            //ui.makeSliders();
+
+            mode = 'simulate'; // switch to simulate mode
+        }
     }
 
-}
+    // initialize leads here
+    // runs in draw loop in simulate mode
+    // updates physics world and redraws
+
+    function draw(){
+        background(51);
+        phys.addForces();
+        phys.update();
+        stroke(200);
+        phys.drawStrings();
+
+        if(touchIsPressed)
+        {
+            let mousePos = createVector(mouseX, mouseY);
+            phys.stickToMouse(mousePos);
+            noStroke();
+            fill(30,144,255,100);
+            ellipse(mousePos.x,mousePos.y,ui.getSpacing()/2);
+        }
+    }
+
+    return {
+        init: init,
+        draw: draw
+    };
+
+}();
 
 function touchStarted() {
 
-    // hack to get around need for initial touch input
-    if(mode == 'welcome')
-    {
-        mode = 'input';
-    }
-
-    else if (mode == 'input')
+    if (mode == 'input')
     {
         // find closest line and vertex to the mouse
         startPos = createVector(mouseX, mouseY);
@@ -205,7 +249,13 @@ function touchMoved() {
 
 function touchEnded() {
 
-    if (mode == 'input')
+    // hack to get around need for initial touch input
+    if(mode == 'welcome')
+    {
+        inputMode.init();
+    }
+
+    else if (mode == 'input')
     {
         if (interact.isCornerGrabbed())
         {

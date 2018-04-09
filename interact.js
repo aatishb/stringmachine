@@ -33,6 +33,7 @@ var interact = function() {
     }
 
     function updateLine(myPos){
+
         geom.deleteIntersections(lineWithCornerGrabbed.line);
 
         if (lineWithCornerGrabbed.whichCorner == 'start')

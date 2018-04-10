@@ -211,7 +211,7 @@ var ui = function() {
         // if there's an intersection nearby, snap to that
         for (let myInt of geom.intersections)
         {
-            if (myVec.dist(myInt.point) <= 0.5*spacing)
+            if (myVec.dist(myInt.point) <= 0.75*spacing)
             {
                 //console.log('snapped to intersection');
                 return myInt.point;

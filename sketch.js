@@ -6,16 +6,18 @@ let mode = 'welcome';
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    stroke(200);
-    strokeWeight(3);
-    fill('red');
 
     let w = width;
     let h = height;
 
+    ui.init();
     ui.setSpacing(w,h);
+
+    stroke(ui.getStringColor());
+    strokeWeight(3);
+
+    textFont('Roboto');
     ui.welcomeScreen(w,h);
-    textSize(0.66 * ui.getSpacing());
     ui.makeButtons();
     ui.hideButtonsDuringInput();
     ui.initGrid(w,h);
@@ -55,9 +57,9 @@ var inputMode = function() {
         if (touchIsMoving || touchWasClicked || interact.isCornerGrabbed())
         {
 
-            background(51);
+            background(ui.getBackgroundColor());
             ui.drawGrid();
-            stroke(200);
+            stroke(ui.getStringColor());
 
             // if touch is moving and nothing is grabbed
             // it means we should draw a new line
@@ -72,14 +74,14 @@ var inputMode = function() {
 
             // draw intersections
             noStroke();
-            fill('red');
+            fill(ui.getButtonColor());
             geom.drawIntersections();
 
             // adjust mode highlights corners
             if (ui.getAdjustMode())
             {
                 noStroke();
-                fill('lightblue');
+                fill(ui.getHighlightColor());
                 geom.drawCorners();
             }
 
@@ -121,23 +123,23 @@ var setupMode = function() {
     function draw(){
         if(touchWasClicked)
         {
-            background(51);
+            background(ui.getBackgroundColor());
             ui.drawGrid();
-            stroke(200);
+            stroke(ui.getStringColor());
 
             geom.drawLines();
             noStroke();
 
             // draw intersections
-            fill('salmon');
+            fill(ui.getButtonColor());
             phys.drawNodes();
 
             // draw pinned nodes
-            fill('dodgerblue');
+            fill(ui.getHighlightColor());
             phys.drawPinnedNodes();
 
             // print text instructions
-            fill('red');
+            fill(ui.getButtonColor());
             ui.pinText();
 
             touchWasClicked = false;
@@ -184,7 +186,7 @@ var simulateMode = function(){
             ui.hideButtonsDuringSimulate();
 
             phys.initializePhysics();
-            stroke(200); //set stroke for the physics simulation
+            stroke(ui.getStringColor()); //set stroke for the physics simulation
             //ui.makeSliders();
 
             mode = 'simulate'; // switch to simulate mode
@@ -196,10 +198,10 @@ var simulateMode = function(){
     // updates physics world and redraws
 
     function draw(){
-        background(51);
+        background(ui.getBackgroundColor());
         phys.addForces();
         phys.update();
-        stroke(200);
+        stroke(ui.getStringColor());
         phys.drawStrings();
 
         if(touchIsPressed)
@@ -207,7 +209,7 @@ var simulateMode = function(){
             let mousePos = createVector(mouseX, mouseY);
             phys.stickToMouse(mousePos);
             noStroke();
-            fill(30,144,255,100);
+            fill(ui.getHighlightColor());
             ellipse(mousePos.x,mousePos.y,ui.getSpacing()/2);
         }
     }
@@ -241,7 +243,7 @@ function touchMoved() {
 
         if (interact.isCornerGrabbed())
         {
-            interact.updateLine(ui.snapToGrid(currentPos));
+            interact.updateLine(currentPos);
         }
         else if (startPos.dist(currentPos) > 10)
         {

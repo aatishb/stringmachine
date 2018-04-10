@@ -9,7 +9,7 @@ var interact = function() {
         for(let myLine of geom.lines){
             let nearestPointInfo = myLine.distanceToCorner(myPoint);
 
-            if(nearestPointInfo.dist < ui.getSpacing()/2)
+            if(nearestPointInfo.dist < ui.getSpacing())
             {
                 if(nearestPointInfo.isCorner == 'start'){
                     lineWithCornerGrabbed = {
@@ -34,18 +34,21 @@ var interact = function() {
 
     function updateLine(myPos){
 
+
         geom.deleteIntersections(lineWithCornerGrabbed.line);
+        geom.deleteLine(lineWithCornerGrabbed.line);
 
         if (lineWithCornerGrabbed.whichCorner == 'start')
         {
-            lineWithCornerGrabbed.line.start = myPos;
+            lineWithCornerGrabbed.line.start = ui.snapToGrid(myPos);
         }
         else if(lineWithCornerGrabbed.whichCorner == 'end')
         {
-            lineWithCornerGrabbed.line.end = myPos;
+            lineWithCornerGrabbed.line.end = ui.snapToGrid(myPos);
         }
 
         geom.computeIntersections(lineWithCornerGrabbed.line);
+        geom.lines.push(lineWithCornerGrabbed.line);
 
     }
 

@@ -3,7 +3,7 @@ var geom = function() {
     // public variables
     let lines = [];
     let intersections = [];
-    let pixelThreshold = 0.1;
+    let pixelThreshold = 0.001;
 
     function drawLines(){
         // draw lines
@@ -129,6 +129,9 @@ var geom = function() {
         }
     }
 
+    function deleteLine(myLine){
+        deleteElement(lines,myLine);
+    }
 
     // public function
     function intersectLines(line1, line2) {
@@ -342,7 +345,7 @@ var geom = function() {
                 closestPoint = this.distanceToPointOnLine(myPoint,t);
                 return {
                     point: p5.Vector.add(closestPoint,myPoint),
-                    dist: closestPoint.magSq(),
+                    dist: sqrt(closestPoint.magSq()),
                     isCorner: false
                 };
             }
@@ -423,7 +426,7 @@ var geom = function() {
                     }
                 }
 
-                deleteElement(lines,myLine);
+                deleteLine(myLine);
                 lines.push(new makeNewLine(myLine.start, pointsOnLine[0]));
 
                 for(let i=0; i<pointsOnLine.length-1; i++)
@@ -457,7 +460,7 @@ var geom = function() {
             if(countIntersections < 2 && myLine.lineLength() < 0.7*ui.getSpacing())
             {
                 //console.log("deleting line");
-                deleteElement(lines,myLine);
+                deleteLine(myLine);
             }
         //console.log('number of intersections: ' + countIntersections);
         }
@@ -503,6 +506,7 @@ var geom = function() {
         computeIntersections: computeIntersections,
         deleteIntersections: deleteIntersections,
         makeNewLine: makeNewLine,
+        deleteLine: deleteLine,
         subdivideLines: subdivideLines,
         pruneLines: pruneLines,
         deletePreviousLine: deletePreviousLine,

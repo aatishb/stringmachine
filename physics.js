@@ -106,7 +106,7 @@ var phys = function() {
             let particlePos = createVector(myParticle.x,myParticle.y);
             let distToMouse = particlePos.dist(myMousePos)
 
-            if(distToMouse < spacing)
+            if(distToMouse < 2*spacing)
             {
                 if(nearestParticle){
                     if(distToMouse < nearestParticleDist){
@@ -185,14 +185,14 @@ var phys = function() {
     function drawNodes(){
         for (let node of phys.nodes)
         {
-            ellipse(node[0], node[1], 10);
+            ellipse(node[0], node[1], 0.5*ui.getSpacing());
         }
     }
 
     function drawPinnedNodes(){
         for (let node of pinnedNodes)
         {
-            ellipse(node[0],node[1],0.5*ui.getSpacing());
+            ellipse(node[0],node[1], ui.getSpacing());
         }
     }
 
@@ -201,7 +201,7 @@ var phys = function() {
         {
             let nodePos = createVector(myNode[0],myNode[1]);
 
-            if (nodePos.dist(myPoint) < 0.5*ui.getSpacing())
+            if (nodePos.dist(myPoint) < ui.getSpacing())
             {
                 if(!pinnedNodes.containsPoint(myNode)){
                     pinnedNodes.push(myNode);
